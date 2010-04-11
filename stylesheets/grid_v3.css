@@ -1,0 +1,138 @@
+/*
+ MooGrid
+*/
+.mgBase {
+	position : relative;
+	border-width : 1px 0px 0px 1px;
+	border-color : #9eb6ce;
+	border-style : solid;
+	width : 100%;
+	height : 100%;
+	padding : 0px;
+	background-color : #fff;
+	font-family : Verdana;
+	font-size : 0.8em;
+	line-height : 100%;
+	white-space : nowrap;
+	overflow : hidden;
+}
+.mgBaseResize {
+	position : absolute;
+	z-index : 5;
+	bottom : 0px;
+	right : 0px;
+	width : 16px;
+	height : 16px;
+	background : url("images/resizer.png");
+	cursor : nw-resize;
+}
+.mgResizeSpan {
+	top : 0px;
+	display : none;
+	width : 4px;
+	height : 19px;
+	cursor : col-resize;
+}
+.mgResizeDragger {
+	position : absolute;
+	z-index : 5;
+	top : 0px;
+	bottom : 16px;
+	width : 3px;
+	background-color : #777;
+}
+.mgEmptySetMsg {
+	padding : 10px;
+	font-style : italic;
+}
+
+.mgHead {
+	position : absolute;
+	z-index : 2;
+	top : 0px;
+	left : 0px;
+	right : 16px;
+	overflow : hidden;
+}
+.mgBody {
+	width : 100%;
+	height : 100%;
+	overflow : scroll;
+}
+.mgFoot {
+	position : absolute;
+	z-index : 2;
+	left : 0px;
+	bottom : 16px;
+	right : 16px;
+	overflow : hidden;
+}
+
+.mgHeadFixed {
+	position : absolute;
+	z-index : 3;
+	top : 0px;
+	left : 0px;
+	overflow : hidden;
+}
+.mgBodyFixed {
+	position : absolute;
+	z-index : 1;
+	top : 0px;
+	left : 0px;
+	bottom : 16px;
+	overflow : hidden;
+}
+.mgFootFixed {
+	position : absolute;
+	z-index : 3;
+	bottom : 0px;
+	left : 0px;
+	overflow : hidden;
+}
+.mgHeadStaticHidden .mgCell, .mgFootStaticHidden .mgCell {
+	visibility : hidden !important;
+}
+
+.mgCol {
+	display : inline-block;
+	*display : inline;
+	zoom : 1;
+	background-color : #fff;
+	vertical-align : top;
+}
+
+.mgHeadRow {
+	border-width : 0px 1px 1px 0px;
+	border-color : #aaa !important;
+	background : #a0c8ee url("images/headerBg.png") top left repeat-x;
+}
+.mgBodyRow {
+	border-width : 0px 1px 1px 0px;
+}
+.mgFootRow {
+	border-width : 1px 1px 0px 0px;
+	border-color : #aaa !important;
+	background : #a0c8ee url("images/footerBg.png") top left repeat-x;
+}
+
+.mgFixedCol .mgBodyRow {
+	background-color : #cee6fc;
+	border-color : #bbb !important;
+}
+.mgCell {
+	padding : 3px 6px 3px 4px;
+	border-color : #ddd;
+	border-style : solid;
+	color : #333;
+	vertical-align : top;
+	visibility : hidden;
+	cursor : default;
+}
+
+.mgFixedRowSelected {
+	background-color : #b8ebf6 !important;
+}
+.mgRowSelected {
+	background-color : #d2f7ff !important;
+}

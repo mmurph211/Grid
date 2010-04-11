@@ -1,0 +1,115 @@
+.grid_base {
+	position : relative;
+	border-width : 1px 0px 0px 1px;
+	border-color : #eee;
+	border-style : solid;
+	white-space : nowrap;
+	overflow : hidden;
+}
+.grid_baseResize {
+	position : absolute;
+	z-index : 5;
+	bottom : 0px;
+	right : 0px;
+	width : 16px;
+	height : 16px;
+	background : url("images/resizer.png");
+	cursor : nwse-resize;
+}
+
+.grid_head {
+	position : absolute;
+	z-index : 3;
+	overflow : hidden;
+}
+.grid_fheadMover {
+	display : inline-block;
+	position : absolute;
+	z-index : 4;
+	zoom : 1;
+	*display : inline;
+}
+.grid_headMover {
+	display : inline-block;
+	zoom : 1;
+	*display : inline;
+}
+.grid_headCell {
+	background-color : #fff;
+}
+.grid_resizeSpan {
+	display : block;
+	position : relative;
+	float : right;
+	margin : 0px -7px 0px 0px;
+	width : 0.5em;
+	height : 1.25em;
+	cursor : ew-resize;
+}
+.grid_resizeDragger {
+	position : absolute;
+	z-index : 5;
+	top : 0px;
+	width : 3px;
+	background-color : #777;
+}
+
+.grid_body {
+	overflow : scroll;
+}
+.grid_fbodyContainer {
+	display : inline-block;
+	position : absolute;
+	z-index : 2;
+	left : 0px;
+	overflow : hidden;
+	zoom : 1;
+	*display : inline;
+}
+.grid_fbodyMover, .grid_bodyMover {
+	display : inline-block;
+	zoom : 1;
+	*display : inline;
+}
+
+.grid_foot {
+	position : absolute;
+	z-index : 3;
+	bottom : 16px;
+	overflow : hidden;
+}
+.grid_ffootMover {
+	display : inline-block;
+	position : absolute;
+	z-index : 4;
+	zoom : 1;
+	*display : inline;
+}
+.grid_footMover {
+	display : inline-block;
+	zoom : 1;
+	*display : inline;
+}
+.grid_footCell {
+	border-top-width : 1px !important;
+	background-color : #fff;
+}
+
+.grid_row {
+	border-width : 0px 0px 1px 0px;
+	border-color : #eee;
+	border-style : solid;
+	overflow : hidden;
+}
+.grid_cell {
+	display : inline-block;
+	margin : 0px 0px -2499px 0px;
+	border-width : 0px 1px 0px 0px;
+	border-color : #eee;
+	border-style : solid;
+	padding : 1px 2px 2500px 2px;
+	vertical-align : top;
+	background-color : #fff;
+	zoom : 1;
+	*display : inline;
+}
