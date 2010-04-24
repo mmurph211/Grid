@@ -19,8 +19,8 @@ MooGrid = new Class({
 		xml_local : "", 
 		json_remote : "", 
 		json_local : {}, 
-		selectedClass : "mgRowSelected", 
-		fixedSelectedClass : "mgFixedRowSelected"
+		selectedBgColor : "#d2f7ff", 
+		fixedSelectedBgColor : "#b8ebf6"
 	}, 
 	
 	Css : {
@@ -481,41 +481,53 @@ MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	selectRange : function(event, clicked) {
-		var st = new Date().getTime(); // TODO: TEMP
 		var rowIndex = /mgRow(\d+)/.exec(clicked.get("class"))[1].toInt(), 
 		    toSelect = [], 
 		    toRemove = [], 
+		    startIndex, 
+		    indexCounter = 0, 
 		    selectedIndexes = this.selectedIndexes, 
 		    rowIndexSelected = selectedIndexes.contains(rowIndex), 
 		    controlPressed = event.control, 
-		    shiftPressed = event.shift;;
+		    shiftPressed = event.shift;
 		
 		if (!this.options.allowMultipleSelections || this.selectedIndexes.length === 0 || (!shiftPressed && !controlPressed)) {
 			toSelect = (rowIndexSelected && selectedIndexes.length === 1) ? [] : [rowIndex];
 			toRemove = selectedIndexes.concat();
-		} else if (controlPressed && !shiftPressed) {
+		} else if (controlPressed) {
 			toSelect = rowIndexSelected ? [] : [rowIndex];
 			toRemove = rowIndexSelected ? [rowIndex] : [];
-		} else if (!controlPressed && shiftPressed) {
-			
-		} else if (controlPressed && shiftPressed) {
-			
+		} else if (shiftPressed) {
+			startIndex = selectedIndexes[0];
+			if (startIndex <= rowIndex) {
+				for (var i=startIndex + 1; i<=rowIndex; i++) {
+					if (selectedIndexes.indexOf(i) === -1) {
+						toSelect[indexCounter++] = i;
+					}
+				}
+			} else {
+				for (var i=startIndex - 1; i>=rowIndex; i--) {
+					if (selectedIndexes.indexOf(i) === -1) {
+						toSelect[indexCounter++] = i;
+					}
+				}
+			}
 		}
 		
+		var st = new Date().getTime(); // TODO: TEMP
 		this.toggleRows(toSelect, toRemove);
+		$("dev").set("value", (new Date().getTime() - st) + " : " + rowIndex); // TODO: TEMP
 		for (var i=0, len=toRemove.length; i<len; i++) {
 			this.selectedIndexes.erase(toRemove[i]);
 		}
 		this.selectedIndexes.combine(toSelect);
-		
-		$("dev").set("value", (new Date().getTime() - st)); // TODO: TEMP
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	toggleRows : function(toSelect, toRemove) {
 		var fixedCols = this.options.fixedCols, 
-		    selClass = this.options.selectedClass, 
-		    fixedSelClass = this.options.fixedSelectedClass, 
+		    selBgColor = this.options.selectedBgColor, 
+		    fixedSelBgColor = this.options.fixedSelectedBgColor, 
 		    staticChildren = this.bodyStatic.children, // Do not extend for performance reasons
 		    fixedChildren; // Do not extend for performance reasons
 		
@@ -524,22 +536,22 @@ MooGrid = new Class({
 			for (var col_index=fixedCols + 1, column; column=fixedChildren[col_index]; col_index++) { // fixedCols + 1 due to hidden html
 				var children = column.children;
 				for (var remove_counter=0, len=toRemove.length; remove_counter<len; remove_counter++) {
-					$(children[toRemove[remove_counter]]).removeClass(fixedSelClass);
+					children[toRemove[remove_counter]].style.backgroundColor = "";
 				}
 				for (var select_counter=0, len=toSelect.length; select_counter<len; select_counter++) {
-					$(children[toSelect[select_counter]]).addClass(fixedSelClass);
+					children[toSelect[select_counter]].style.backgroundColor = fixedSelBgColor;
 				}
 			}
 		}
 		
 		for (var col_index=0, column; column=staticChildren[col_index]; col_index++) {
-			var sClass = (fixedCols > col_index) ? fixedSelClass : selClass, 
+			var bgColor = (fixedCols > col_index) ? fixedSelBgColor : selBgColor, 
 			    children = column.children;
 			for (var remove_counter=0, len=toRemove.length; remove_counter<len; remove_counter++) {
-				$(children[toRemove[remove_counter]]).removeClass(sClass);
+				children[toRemove[remove_counter]].style.backgroundColor = "";
 			}
 			for (var select_counter=0, len=toSelect.length; select_counter<len; select_counter++) {
-				$(children[toSelect[select_counter]]).addClass(sClass);
+				children[toSelect[select_counter]].style.backgroundColor = bgColor;
 			}
 		}
 	}, 

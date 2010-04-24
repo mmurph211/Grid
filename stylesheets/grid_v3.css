@@ -129,10 +129,3 @@
 	visibility : hidden;
 	cursor : default;
 }
-
-.mgFixedRowSelected {
-	background-color : #b8ebf6 !important;
-}
-.mgRowSelected {
-	background-color : #d2f7ff !important;
-}
