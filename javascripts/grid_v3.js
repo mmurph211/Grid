@@ -162,7 +162,8 @@ MooGrid = new Class({
 				if (allowColResize) {
 					col_index = col_length;
 					while (col_index) {
-						arr[--col_index][row_index] += ("</DIV><SPAN class='mgResizeSpan' col='" + col_index + "'>&nbsp;</SPAN>");
+						col_index--; // Not in next line due to Opera bug
+						arr[col_index][row_index] += ("</DIV><SPAN class='mgResizeSpan' col='" + col_index + "'>&nbsp;</SPAN>");
 					}
 				}
 			}
