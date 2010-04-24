@@ -1,0 +1,16 @@
+//////////////////////////////////////////////////////////////////////////
+//
+// MooGrid - A Mootools-based grid component
+//
+//////////////////////////////////////////////////////////////////////////
+// MooGrid requires Mootools 1.2 and Mootools 1.2 More (Class.Binds, Element.Delegation)
+// 
+// Features:
+// - Cross browser compatible (Internet Explorer, FireFox, Chrome, Safari, Opera)
+// - JSON, XML remote and inline loading supported
+// - Fixed header, footer, columns
+// - Column resizing
+// - Grid resizing
+// - Row selection (singular and multi-select)
+// 
+//////////////////////////////////////////////////////////////////////////

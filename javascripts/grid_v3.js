@@ -514,9 +514,7 @@ MooGrid = new Class({
 			}
 		}
 		
-		var st = new Date().getTime(); // TODO: TEMP
 		this.toggleRows(toSelect, toRemove);
-		$("dev").set("value", (new Date().getTime() - st) + " : " + rowIndex); // TODO: TEMP
 		for (var i=0, len=toRemove.length; i<len; i++) {
 			this.selectedIndexes.erase(toRemove[i]);
 		}
