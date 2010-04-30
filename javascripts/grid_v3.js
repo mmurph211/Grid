@@ -258,12 +258,16 @@ MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	parseData : function() {
+		this.hasHead = (this.cellData.head.length > 0 && this.cellData.head[0].length > 0);
+		this.hasBody = (this.cellData.body.length > 0 && this.cellData.body[0].length > 0);
+		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
+		
 		this.generateGrid();
 		this.body.addEvent("scroll", this.syncScrolls);
 		this.element.appendChild(this.docFrag);
 		setTimeout(this.alignColumns, 25);
 		
-		if (this.cellData.body.length === 0 || this.cellData.body[0].length === 0) {
+		if (!this.hasBody) {
 			this.bodyStatic.set("html", "<DIV class='mgEmptySetMsg'>No results returned.</DIV>");
 		}
 	}, 
@@ -283,16 +287,17 @@ MooGrid = new Class({
 		}.bind(this);
 		
 		var allowColResize = this.options.allowColumnResize;
-		var hHTML = _generate(this.cellData.head, (allowColResize) ? "" : "</DIV>", (allowColResize) ? "</DIV>" : "</DIV></DIV>");
-		var bHTML = _generate(this.cellData.body, "</DIV>", "</DIV></DIV>");
-		var fHTML = _generate(this.cellData.foot, "</DIV>", "</DIV></DIV>");
+		var emptyHtml = { "fullHTML" : "", "fixedHTML" : "" };
+		var hHTML = (this.hasHead) ? _generate(this.cellData.head, (allowColResize) ? "" : "</DIV>", (allowColResize) ? "</DIV>" : "</DIV></DIV>") : emptyHtml;
+		var bHTML = (this.hasBody) ? _generate(this.cellData.body, "</DIV>", "</DIV></DIV>") : emptyHtml;
+		var fHTML = (this.hasFoot) ? _generate(this.cellData.foot, "</DIV>", "</DIV></DIV>") : emptyHtml;
 		
 		this.headStatic.set("html", hHTML.fullHTML);
 		this.bodyStatic.set("html", bHTML.fullHTML);
 		this.footStatic.set("html", fHTML.fullHTML);
 		
 		this.headFixed.set("html", hHTML.fixedHTML);
-		if (this.cellData.head.length === 0 || this.cellData.head[0].length === 0) {
+		if (!this.hasHead) {
 			this.bodyFixed2.set("html", bHTML.fixedHTML);
 		} else {
 			this.bodyFixed2.set("html", [hHTML.fixedHTML, "<br>", bHTML.fixedHTML].join(""));
