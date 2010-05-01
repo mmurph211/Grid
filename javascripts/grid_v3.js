@@ -19,8 +19,8 @@ MooGrid = new Class({
 		xml_local : "", 
 		json_remote : "", 
 		json_local : {}, 
-		selectedBgColor : "#d2f7ff", 
-		fixedSelectedBgColor : "#b8ebf6"
+		selectedBgColor : "#e5ebf6", 
+		fixedSelectedBgColor : "#e5ebf6"
 	}, 
 	
 	Css : {
@@ -78,7 +78,6 @@ MooGrid = new Class({
 		if (this.options.allowSelections || this.options.allowMultipleSelections) {
 			this.options.allowSelections = true;
 			this.body.addEvent("mousedown:relay(div.mgBodyRow)", this.selectRange);
-			this.base.addEvent((Browser.Engine.trident) ? "selectstart" : "click", this.clearTextSelections);
 		}
 		
 		this.columns = 0;
@@ -260,6 +259,7 @@ MooGrid = new Class({
 	parseData : function() {
 		this.hasHead = (this.cellData.head.length > 0 && this.cellData.head[0].length > 0);
 		this.hasBody = (this.cellData.body.length > 0 && this.cellData.body[0].length > 0);
+		this.hasFixedBody = (this.options.fixedCols > 0);
 		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
 		
 		this.generateGrid();
@@ -350,9 +350,25 @@ MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	syncScrolls : function() {
-		this.headStatic.setStyle("margin-left", -1 * this.body.scrollLeft);
-		this.footStatic.setStyle("margin-left", -1 * this.body.scrollLeft);
-		this.bodyFixed2.setStyle("margin-top", -1 * this.body.scrollTop);
+		if (this.hasHead || this.hasFoot) {
+			var sL = this.body.scrollLeft;
+			if (sL !== this.lastScrollLeft) {
+				if (this.hasHead) {
+					this.headStatic.setStyle("margin-left", -1 * sL);
+				}
+				if (this.hasFoot) {
+					this.footStatic.setStyle("margin-left", -1 * sL);
+				}
+				this.lastScrollLeft = sL;
+			}
+		}
+		if (this.hasFixedBody) {
+			var sT = this.body.scrollTop;
+			if (sT !== this.lastScrollTop) {
+				this.bodyFixed2.setStyle("margin-top", -1 * this.body.scrollTop);
+				this.lastScrollTop = sT;
+			}
+		}
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -526,6 +542,35 @@ MooGrid = new Class({
 			this.selectedIndexes.erase(toRemove[i]);
 		}
 		this.selectedIndexes.combine(toSelect);
+		if (controlPressed || shiftPressed) {
+			setTimeout(this.clearTextSelections, 25);
+		}
+		
+		this.body.fireEvent("rowSelect", [toSelect, toRemove, event.target, rowIndex]);
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	selectAll : function(toggle) {
+		var toSelect = [], 
+		    toRemove = [], 
+		    indexCounter = 0, 
+		    selectedIndexes = this.selectedIndexes, 
+		    maxIndex = (this.hasBody) ? this.bodyStatic.children[0].children.length - 1 : 0;
+		
+		if (toggle === "selectAll") {
+			for (var i=0; i<=maxIndex; i++) {
+				if (selectedIndexes.indexOf(i) === -1) {
+					toSelect[indexCounter++] = i;
+				}
+			}
+			this.selectedIndexes.combine(toSelect);
+		} else {
+			toRemove = this.selectedIndexes.concat();
+			this.selectedIndexes = [];
+		}
+		
+		this.toggleRows(toSelect, toRemove);
+		this.body.fireEvent("rowSelect", [toSelect, toRemove, null, -1]);
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -572,3 +617,4 @@ MooGrid = new Class({
 		return false;
 	}
 });
+
