@@ -675,6 +675,8 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	cleanUp : function(fullCleanUp) {
+		var elementId = this.element.id;
+		
 		this.base.removeEvents();
 		this.body.removeEvents();
 		this.bodyFixed.removeEvents();
@@ -705,8 +707,8 @@ var MooGrid = new Class({
 		if (fullCleanUp) {
 			this.Css.sheet = null;
 			
-			if (!!$(this.element.id + "SS")) {
-				$(this.element.id + "SS").dispose();
+			if (!!$(elementId + "SS")) {
+				$(elementId + "SS").dispose();
 			}
 		}
 	}
