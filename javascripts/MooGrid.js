@@ -3,9 +3,9 @@
 // MooGrid
 //
 ////////////////////////////////////
-MooGrid = new Class({
-	Implements : [Options, Class.Occlude], 
-	Binds : ["parseData_Xml", "parseData_Json", "alignColumns", "syncScrolls", "initResizeGrid", "initResizeColumn", "selectRange", "clearTextSelections"], 
+var MooGrid = new Class({
+	Implements : Options, 
+	Binds : ["parseData_Xml", "parseData_Json", "alignColumns", "syncScrolls", "simulateMouseScroll", "initResizeGrid", "initResizeColumn", "selectRange", "clearTextSelections"], 
 	
 	options : {
 		noCache : true, 
@@ -13,17 +13,21 @@ MooGrid = new Class({
 		allowColumnResize : false, 
 		allowSelections : false, 
 		allowMultipleSelections : false, 
+		supportMultipleGridsInView : false, 
 		fixedCols : 0, 
+		colBGColors : [], 
 		srcType : "", 
 		xml_remote : "", 
 		xml_local : "", 
 		json_remote : "", 
 		json_local : {}, 
-		selectedBgColor : "#d2f7ff", 
-		fixedSelectedBgColor : "#b8ebf6"
+		selectedBgColor : "#e5ebf6", 
+		fixedSelectedBgColor : "#e5ebf6", 
+		scrollLeftTo : 0
 	}, 
 	
 	Css : {
+		idRulePrefix : "", 
 		sheet : null, 
 		rules : {}
 	}, 
@@ -33,9 +37,7 @@ MooGrid = new Class({
 	//////////////////////////////////////////////////////////////////////////////////
 	initialize : function(element, options) {
 		this.element = document.id(element);
-		if (!!this.occlude && this.occlude()) return this.occluded;
 		this.setOptions(options);
-		this.Css.sheet = new Element("STYLE", { "type" : "text/css" }).inject(document.head);
 		this.generateSkeleton();
 	}, 
 	
@@ -60,10 +62,7 @@ MooGrid = new Class({
 		this.footStatic = new Element("DIV", { "class" : "mgFootStatic" }).inject(this.foot);
 		
 		if (this.options.fixedCols > 0 && !Browser.Engine.trident) { // Simulate some degree of scrolling over non-scrollable content
-			this.bodyFixed.addEvent("mousewheel", function(event) {
-				this.body.scrollTop -= (event.wheel * 100);
-				this.syncScrolls();
-			}.bind(this));
+			this.bodyFixed.addEvent("mousewheel", this.simulateMouseScroll);
 		}
 		
 		if (this.options.allowGridResize) {
@@ -257,34 +256,46 @@ MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	parseData : function() {
-		this.hasHead = (this.cellData.head.length > 0 && this.cellData.head[0].length > 0);
-		this.hasBody = (this.cellData.body.length > 0 && this.cellData.body[0].length > 0);
-		this.hasFixedBody = (this.options.fixedCols > 0);
-		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
-		
 		this.generateGrid();
-		this.body.addEvent("scroll", this.syncScrolls);
-		this.element.appendChild(this.docFrag);
-		setTimeout(this.alignColumns, 25);
 		
-		if (!this.hasBody) {
-			this.bodyStatic.set("html", "<DIV class='mgEmptySetMsg'>No results returned.</DIV>");
+		this.lastScrollLeft = 0;
+		this.lastScrollTop = 0;
+		this.body.addEvent("scroll", this.syncScrolls);
+		
+		if (!!$(this.element.id + "SS")) {
+			this.Css.sheet = $(this.element.id + "SS");
+			this.setRules(); // Reset stylesheet to blank
+		} else {
+			this.Css.sheet = new Element("STYLE", { "id" : this.element.id + "SS", "type" : "text/css" }).inject(document.head);
 		}
+		
+		this.element.appendChild(this.docFrag);
+		if (this.options.scrollLeftTo > 0) {
+			this.body.scrollLeft = this.options.scrollLeftTo;
+		}
+		
+		setTimeout(this.alignColumns, 25);
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	generateGrid : function() {
+		var fixedCols = this.options.fixedCols;
 		var _generate = function(cols, joinStr, closeStr) {
 			var html = [];
 			var col_index = cols.length;
 			while (col_index) {
-				html[--col_index] = ["<DIV class='mgCol mgCol", col_index, ((col_index < this.options.fixedCols) ? " mgFixedCol'>" : "'>"), cols[col_index].join(joinStr), closeStr].join("");
+				html[--col_index] = ["<DIV class='mgCol mgCol", col_index, ((col_index < fixedCols) ? " mgFixedCol'>" : "'>"), cols[col_index].join(joinStr), closeStr].join("");
 			}
 			return {
 				"fullHTML" : html.join(""), 
-				"fixedHTML" : html.slice(0, this.options.fixedCols).join("")
+				"fixedHTML" : html.slice(0, fixedCols).join("")
 			};
-		}.bind(this);
+		};
+		
+		this.hasHead = (this.cellData.head.length > 0 && this.cellData.head[0].length > 0);
+		this.hasBody = (this.cellData.body.length > 0 && this.cellData.body[0].length > 0);
+		this.hasFixedBody = (this.options.fixedCols > 0);
+		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
 		
 		var allowColResize = this.options.allowColumnResize;
 		var emptyHtml = { "fullHTML" : "", "fixedHTML" : "" };
@@ -295,6 +306,9 @@ MooGrid = new Class({
 		this.headStatic.set("html", hHTML.fullHTML);
 		this.bodyStatic.set("html", bHTML.fullHTML);
 		this.footStatic.set("html", fHTML.fullHTML);
+		if (!this.hasBody) {
+			this.bodyStatic.set("html", "<DIV class='mgEmptySetMsg'>No results returned.</DIV>");
+		}
 		
 		this.headFixed.set("html", hHTML.fixedHTML);
 		if (!this.hasHead) {
@@ -315,6 +329,9 @@ MooGrid = new Class({
 	alignColumns : function() {
 		if (this.columns === 0) return;
 		
+		var allowColumnResize = this.options.allowColumnResize;
+		var colBGColors = this.options.colBGColors;
+		var colBGColorsLength = colBGColors.length;
 		this.columnWidths = [];
 		this.colIndex = 0;
 		this.colNodes = {
@@ -333,19 +350,25 @@ MooGrid = new Class({
 			
 			this.columnWidths[this.colIndex] = width;
 			this.Css.rules[".mgCol" + this.colIndex] = { width : width + "px" };
-			this.Css.rules[".mgResizeSpan" + this.colIndex] = { "margin-left" : (width - 2) + "px" };
+			if (colBGColorsLength > this.colIndex && colBGColors[this.colIndex] !== "#ffffff") {
+				this.Css.rules[".mgCol" + this.colIndex]["background-color"] = colBGColors[this.colIndex];
+			}
+			if (allowColumnResize) {
+				this.Css.rules[".mgResizeSpan" + this.colIndex] = { "margin-left" : (width - 2) + "px" };
+			}
 			
 			this.colIndex++;
 			if (this.colIndex === this.columns) {
-				this.colNodes = null;
-				this.Css.rules[".mgCell"] = { visibility : "visible" };
-				if (this.options.allowColumnResize) {
-					this.Css.rules[".mgResizeSpan"] = { display : "block", position : "absolute" };
-				}
-				this.setRules();
 				break;
 			}
 		}
+		
+		this.colNodes = null;
+		this.Css.rules[".mgCell"] = { visibility : "visible" };
+		if (allowColumnResize) {
+			this.Css.rules[".mgResizeSpan"] = { display : "block", position : "absolute" };
+		}
+		this.setRules();
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -372,13 +395,24 @@ MooGrid = new Class({
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
+	simulateMouseScroll : function(event) {
+		this.body.scrollTop -= (event.wheel * 100);
+		this.syncScrolls();
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
 	setRules : function() {
-		var sheet = this.Css.sheet, 
+		var idRulePrefix = "", 
+		    sheet = this.Css.sheet, 
 		    rules = this.Css.rules, 
 		    cssText = [], 
 		    cssElText = [], 
 		    i = 0, 
 		    j = 0;
+		
+		if (this.options.supportMultipleGridsInView) {
+			idRulePrefix = (this.Css.idRulePrefix !== "") ? this.Css.idRulePrefix : "#" + this.element.id + " ";
+		}
 		
 		for (var rule in rules) {
 			j = 0;
@@ -386,7 +420,7 @@ MooGrid = new Class({
 			for (var prop in rules[rule]) {
 				cssElText[j++] = prop + " : " + rules[rule][prop] + ";";
 			}
-			cssText[i++] = rule + " { " + cssElText.join(" ") + " }";
+			cssText[i++] = idRulePrefix + rule + " { " + cssElText.join(" ") + " }";
 		}
 		
 		if (Browser.Engine.trident) {
@@ -452,6 +486,7 @@ MooGrid = new Class({
 			cIndex : col, 
 			origWidth : this.columnWidths[col], 
 			origX : event.client.x, 
+			lastLeft : -1, 
 			newWidth : this.columnWidths[col], 
 			boundMouseMove : this.resizeColumn.bind(this), 
 			boundMouseUp : this.endResizeColumn.bind(this)
@@ -481,8 +516,9 @@ MooGrid = new Class({
 		var newLeft = (widthChange >= 0) ? this.ResizeInfo.lPos + widthChange : this.ResizeInfo.lPos - (-1 * widthChange);
 		
 		this.ResizeInfo.newWidth = newWidth;
-		if (newWidth > 15) {
+		if (this.ResizeInfo.lastLeft !== newLeft && newWidth > 15) {
 			this.ResizeInfo.dragger.setStyle("left", newLeft);
+			this.ResizeInfo.lastLeft = newLeft;
 		}
 		
 		this.clearTextSelections();
@@ -499,11 +535,31 @@ MooGrid = new Class({
 		this.Css.rules[".mgCol" + this.ResizeInfo.cIndex]["width"] = this.ResizeInfo.newWidth + "px";
 		this.Css.rules[".mgResizeSpan" + this.ResizeInfo.cIndex]["margin-left"] = (this.ResizeInfo.newWidth - 2) + "px";
 		this.setRules();
+		this.syncScrolls();
 		this.columnWidths[this.ResizeInfo.cIndex] = this.ResizeInfo.newWidth;
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
+	selectIndexes : function(indexes) {
+		var toSelect = [], 
+		    toSelectI = 0, 
+		    selectedIndexes = this.selectedIndexes;
+		
+		for (var i=0, len=indexes.length; i<len; i++) {
+			if (!selectedIndexes.contains(indexes[i])) {
+				toSelect[toSelectI++] = indexes[i];
+			}
+		}
+		
+		this.toggleRows(toSelect, []);
+		this.selectedIndexes.combine(toSelect);
+		this.body.fireEvent("rowSelect", [toSelect, [], null, -1]);
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
 	selectRange : function(event, clicked) {
+		if (event.rightClick) return;
+		
 		var rowIndex = /mgRow(\d+)/.exec(clicked.get("class"))[1].toInt(), 
 		    toSelect = [], 
 		    toRemove = [], 
@@ -615,6 +671,44 @@ MooGrid = new Class({
 		}
 		
 		return false;
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	cleanUp : function(fullCleanUp) {
+		this.base.removeEvents();
+		this.body.removeEvents();
+		this.bodyFixed.removeEvents();
+		
+		this.element = null;
+		this.docFrag = null;
+		this.base = null;
+		
+		this.head = null;
+		this.headFixed = null;
+		this.headStatic = null;
+		
+		this.body = null;
+		this.bodyFixed = null;
+		this.bodyFixed2 = null;
+		this.bodyStatic = null;
+		
+		this.foot = null;
+		this.footFixed = null;
+		this.footStatic = null;
+		
+		this.baseResize = null;
+		
+		if (!!this.ResizeInfo) {
+			this.ResizeInfo.dragger = null;
+		}
+		
+		if (fullCleanUp) {
+			this.Css.sheet = null;
+			
+			if (!!$(this.element.id + "SS")) {
+				$(this.element.id + "SS").dispose();
+			}
+		}
 	}
 });
 

@@ -23,7 +23,7 @@
 	right : 0px;
 	width : 16px;
 	height : 16px;
-	background : url("images/resizer.png");
+	background : transparent url("MooGrid.png") 0px -38px no-repeat;
 	cursor : nw-resize;
 }
 .mgResizeSpan {
@@ -105,7 +105,7 @@
 .mgHeadRow {
 	border-width : 0px 1px 1px 0px;
 	border-color : #aaa !important;
-	background : #a0c8ee url("images/headerBg.png") top left repeat-x;
+	background : #a0c8ee url("MooGrid.png") 0px 0px repeat-x;
 }
 .mgBodyRow {
 	border-width : 0px 1px 1px 0px;
@@ -113,7 +113,7 @@
 .mgFootRow {
 	border-width : 1px 1px 0px 0px;
 	border-color : #aaa !important;
-	background : #a0c8ee url("images/footerBg.png") top left repeat-x;
+	background : #a0c8ee url("MooGrid.png") 0px -19px repeat-x;
 }
 
 .mgFixedCol .mgBodyRow {

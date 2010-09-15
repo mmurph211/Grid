@@ -12,5 +12,6 @@
 // - Column resizing
 // - Grid resizing
 // - Row selection (singular and multi-select)
+// - Multiple grids per page supported
 // 
 //////////////////////////////////////////////////////////////////////////
