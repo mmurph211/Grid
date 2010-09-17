@@ -276,7 +276,7 @@ var MooGrid = new Class({
 			this.body.scrollLeft = this.options.scrollLeftTo;
 		}
 		
-		setTimeout(this.alignColumns, 25);
+		setTimeout(this.alignColumns.pass(false), 25);
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -328,7 +328,7 @@ var MooGrid = new Class({
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	alignColumns : function() {
+	alignColumns : function(reAlign) {
 		if (this.columns === 0) return;
 		
 		var allowColumnResize = this.options.allowColumnResize;
@@ -341,6 +341,13 @@ var MooGrid = new Class({
 			body : this.bodyStatic.children, 
 			foot : this.footStatic.children
 		};
+		
+		if (reAlign === true) {
+			for (var i=0; i<this.columns; i++) {
+				delete this.Css.rules[".mgCol" + i].width;
+			}
+			this.setRules();
+		}
 		
 		while (true) {
 			var targets = [this.colNodes.head[this.colIndex], this.colNodes.body[this.colIndex], this.colNodes.foot[this.colIndex]];
@@ -422,7 +429,9 @@ var MooGrid = new Class({
 			for (var prop in rules[rule]) {
 				cssElText[j++] = prop + " : " + rules[rule][prop] + ";";
 			}
-			cssText[i++] = idRulePrefix + rule + " { " + cssElText.join(" ") + " }";
+			if (j > 0) {
+				cssText[i++] = idRulePrefix + rule + " { " + cssElText.join(" ") + " }";
+			}
 		}
 		
 		if (Browser.Engine.trident) {
