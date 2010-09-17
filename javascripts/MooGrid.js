@@ -2,6 +2,8 @@
 //
 // MooGrid
 //
+// MIT-style license. Copyright 2010 Matt V. Murphy
+//
 ////////////////////////////////////
 var MooGrid = new Class({
 	Implements : Options, 
