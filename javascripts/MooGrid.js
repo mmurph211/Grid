@@ -276,7 +276,11 @@ var MooGrid = new Class({
 			this.body.scrollLeft = this.options.scrollLeftTo;
 		}
 		
-		setTimeout(this.alignColumns.pass(false), 25);
+		if (!Browser.Engine.trident5) {
+			this.alignColumns(false);
+		} else {
+			setTimeout(this.alignColumns.pass(false), 25);
+		}
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
