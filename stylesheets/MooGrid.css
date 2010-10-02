@@ -39,7 +39,7 @@
 	position : absolute;
 	z-index : 5;
 	top : 0px;
-	bottom : 16px;
+	bottom : 17px;
 	width : 3px;
 	background-color : #777;
 }
@@ -53,7 +53,7 @@
 	z-index : 2;
 	top : 0px;
 	left : 0px;
-	right : 16px;
+	right : 17px;
 	overflow : hidden;
 }
 .mgBody {
@@ -65,8 +65,8 @@
 	position : absolute;
 	z-index : 2;
 	left : 0px;
-	bottom : 16px;
-	right : 16px;
+	bottom : 17px;
+	right : 17px;
 	overflow : hidden;
 }
 
@@ -82,7 +82,7 @@
 	z-index : 1;
 	top : 0px;
 	left : 0px;
-	bottom : 16px;
+	bottom : 17px;
 	overflow : hidden;
 }
 .mgFootFixed {
