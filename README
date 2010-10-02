@@ -1,14 +1,18 @@
-//////////////////////////////////////////////////////////////////////////
 //
 // MooGrid - A Mootools-based grid component
-//
+// 
 // MIT-style license. Copyright 2010 Matt V. Murphy | bW11cnBoMjExQGdtYWlsLmNvbQ==
-// Demo : http://www.matts411.com/site_media/demos/MooGrid/
+// MooGrid requires Mootools 1.2 and Mootools 1.2 More (Class.Binds, Element.Delegation)
 //
 //////////////////////////////////////////////////////////////////////////
-// MooGrid requires Mootools 1.2 and Mootools 1.2 More (Class.Binds, Element.Delegation)
-// 
+// Links:
+//
+// - Demo: http://www.matts411.com/site_media/demos/MooGrid/
+// - GitHub: http://github.com/mmurph211/Grid
+//
+//////////////////////////////////////////////////////////////////////////
 // Features:
+//
 // - Cross browser compatible (Internet Explorer, FireFox, Chrome, Safari, Opera)
 // - JSON, XML remote and inline loading supported
 // - Fixed header, footer, columns
@@ -34,4 +38,4 @@
 // - In Webkit-based browsers when scrolling left to right with column resizing enabled, 
 //     the elements positioned in columns to initialize resizing do not scroll with the columns
 //
-//////////////////////////////////////////////////////////////////////////
+
