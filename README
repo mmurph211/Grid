@@ -22,7 +22,8 @@
 // - Documentation
 // - Double click column header to auto fit content
 // - Relative column widths
-// - Zebra row support in older browsers. In newer browsers try: .mgBodyRow:nth-child(odd) { background-color : [color]; }
+// - Zebra row support in older browsers. In newer browsers try:
+//     .mgBodyRow:nth-child(odd) { background-color : [color]; }
 // - Convert example sprite to data uri
 // - More...
 //
