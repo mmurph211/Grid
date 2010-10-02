@@ -13,7 +13,7 @@
 	padding : 0px;
 	background-color : #fff;
 	font-family : Verdana;
-	font-size : 0.8em;
+	font-size : 0.70em;
 	line-height : 100%;
 	white-space : nowrap;
 	overflow : hidden;
@@ -106,25 +106,26 @@
 
 .mgHeadRow {
 	border-width : 0px 1px 1px 0px;
-	border-color : #aaa !important;
+	border-color : #aaa #ccc !important;
 	background : #a0c8ee url("MooGrid.png") 0px 0px repeat-x;
+	color : #111 !important;
 }
 .mgBodyRow {
 	border-width : 0px 1px 1px 0px;
 }
 .mgFootRow {
 	border-width : 1px 1px 0px 0px;
-	border-color : #aaa !important;
+	border-color : #aaa #ccc !important;
 	background : #a0c8ee url("MooGrid.png") 0px -19px repeat-x;
 }
 
 .mgFixedCol .mgBodyRow {
 	background-color : #cee6fc;
-	border-color : #bbb !important;
+	border-color : #bbb #ccc !important;
 }
 .mgCell {
-	padding : 3px 6px 3px 4px;
-	border-color : #ddd;
+	padding : 4px 6px 4px 4px;
+	border-color : #ddd #eee;
 	border-style : solid;
 	color : #333;
 	vertical-align : top;

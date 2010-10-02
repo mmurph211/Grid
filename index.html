@@ -4,38 +4,54 @@
 	<title>Grid</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=8">
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-	<link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css">
+	<!--<link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css">-->
 	<style>
-		html, body {
-			height : 100%;
-			margin : 0px;
-			padding : 0px;
-			background-color : #fff;
-			overflow : hidden;
-		}
-		#demoDiv {
-			margin : 20px;
-			width : 1000px;
-			height : 320px;
-			background-color : #fff;
-		}
-		#dev {
-			margin : 0px 20px 20px 20px;
-			width : 790px;
-			height : 120px;
-		}
+		html,body{height:100%;margin:0px;padding:0px;overflow:hidden;}
+		h1{display:block;margin:20px 20px 0px 20px;line-height:21px;font-size:21px;font-family:Verdana;color:#333;}
+		a{font-size:11px;font-family:Verdana;text-decoration:none;color:#0000ff;}
+		a:hover{text-decoration:underline;}
+		#github{display:inline-block;margin:0px 20px 0px 20px;}
+		#demoDiv{margin:20px;width:700px;height:290px;}
+		#demoLinks{margin:0px 20px;}
+		#dev{display:none;margin:0px 20px 20px 20px;width:790px;height:120px;}
+		#srcXml{display:none;}
+		
+		.mgBase{position:relative;border-width:1px 0px 0px 1px;border-color:#9eb6ce;border-style:solid;width:100%;height:100%;padding:0px;background-color:#fff;font-family:Verdana;font-size:0.70em;line-height:100%;white-space:nowrap;overflow:hidden;}
+		.mgBaseResize{position:absolute;z-index:5;bottom:0px;right:0px;width:16px;height:16px;background:transparent url("stylesheets/MooGrid.png") 0px -38px no-repeat;cursor:nw-resize;}
+		.mgResizeSpan{top:0px;display:none;width:4px;height:19px;cursor:col-resize;}
+		.mgResizeDragger{position:absolute;z-index:5;top:0px;bottom:17px;width:3px;background-color:#777;}
+		.mgEmptySetMsg{padding:10px;font-style:italic;}
+		.mgHead{position:absolute;z-index:2;top:0px;left:0px;right:17px;overflow:hidden;}
+		.mgBody{width:100%;height:100%;overflow:scroll;}
+		.mgFoot{position:absolute;z-index:2;left:0px;bottom:17px;right:17px;overflow:hidden;}
+		.mgHeadFixed{position:absolute;z-index:3;top:0px;left:0px;overflow:hidden;}
+		.mgBodyFixed{position:absolute;z-index:1;top:0px;left:0px;bottom:17px;overflow:hidden;}
+		.mgFootFixed{position:absolute;z-index:3;bottom:0px;left:0px;overflow:hidden;}
+		.mgHeadStaticHidden .mgCell, .mgFootStaticHidden .mgCell{visibility:hidden !important;}
+		.mgCol{display:inline-block;*display:inline;zoom:1;background-color:#fff;vertical-align:top;}
+		.mgHeadRow{border-width:0px 1px 1px 0px;border-color:#aaa #ccc !important;background:#a0c8ee url("stylesheets/MooGrid.png") 0px 0px repeat-x;color:#111 !important;}
+		.mgBodyRow{border-width:0px 1px 1px 0px;}
+		.mgFootRow{border-width:1px 1px 0px 0px;border-color:#aaa #ccc !important;background:#a0c8ee url("stylesheets/MooGrid.png") 0px -19px repeat-x;}
+		.mgFixedCol .mgBodyRow{background-color:#cee6fc;border-color:#bbb #ccc !important;}
+		.mgCell{padding:4px 6px 4px 4px;border-color:#ddd #eee;border-style:solid;color:#333;vertical-align:top;visibility:hidden;cursor:default;}
 	</style>
 </head>
 <body>
+	<h1>MooGrid demo</h1>
+	<a id="github" href="http://github.com/mmurph211/Grid" title="GitHub">GitHub project page</a>
 	<div id="demoDiv"></div>
-	
+	<div id="demoLinks">
+		<a href="javascripts/MooGrid.js" title="View Script">View Script Source</a> | <a href="stylesheets/MooGrid.css" title="View CSS">View CSS Source</a>
+	</div>
 	<textarea id="dev"></textarea><br>
+	<textarea id="srcXml"></textarea>
 	
-	<textarea id="srcXml" style="display:none;"></textarea>
-	
+	<!--
 	<script type="text/javascript" src="javascripts/mootools-1.2.5-core-nc.js"></script>
 	<script type="text/javascript" src="javascripts/mootools-1.2.4.4-more.js"></script>
 	<script type="text/javascript" src="javascripts/MooGrid.js"></script>
+	-->
+	<script type="text/javascript" src="javascripts/demo_compressed.js"></script>
 	<script type="text/javascript">
 		window.addEvent("domready", function(event) {
 			var myGrid = new MooGrid("demoDiv", {
@@ -45,9 +61,9 @@
 				allowMultipleSelections : true, 
 				fixedCols : 1, 
 				srcType : "json_local", 
-				xml_remote : "data_v2.xml", 
-				xml_local : $("srcXml").value, 
-				json_remote : "data_json_v2.txt", 
+				// xml_remote : "data_v2.xml", 
+				// xml_local : $("srcXml").value, 
+				// json_remote : "data_json_v2.txt", 
 				json_local : jsonData
 			});
 		});

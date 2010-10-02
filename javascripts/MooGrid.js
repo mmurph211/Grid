@@ -23,8 +23,8 @@ var MooGrid = new Class({
 		xml_local : "", 
 		json_remote : "", 
 		json_local : {}, 
-		selectedBgColor : "#e5ebf6", 
-		fixedSelectedBgColor : "#e5ebf6", 
+		selectedBgColor : "#fef7dc", 
+		fixedSelectedBgColor : "#fef7dc", 
 		scrollLeftTo : 0
 	}, 
 	
