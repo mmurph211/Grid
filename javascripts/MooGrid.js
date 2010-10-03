@@ -276,7 +276,7 @@ var MooGrid = new Class({
 			this.body.scrollLeft = this.options.scrollLeftTo;
 		}
 		
-		if (!Browser.Engine.trident5) {
+		if (!Browser.Engine.trident5 && !Browser.Engine.trident6) {
 			this.alignColumns(false);
 		} else {
 			setTimeout(this.alignColumns.pass(false), 25);
@@ -338,6 +338,8 @@ var MooGrid = new Class({
 		var allowColumnResize = this.options.allowColumnResize;
 		var colBGColors = this.options.colBGColors;
 		var colBGColorsLength = colBGColors.length;
+		var rules = this.Css.rules;
+		this.scrollBarSize = this.body.offsetWidth - this.body.clientWidth;
 		this.columnWidths = [];
 		this.colIndex = 0;
 		this.colNodes = {
@@ -348,9 +350,22 @@ var MooGrid = new Class({
 		
 		if (reAlign === true) {
 			for (var i=0; i<this.columns; i++) {
-				delete this.Css.rules[".mgCol" + i].width;
+				delete rules[".mgCol" + i].width;
 			}
 			this.setRules();
+		}
+		
+		if (this.hasHead) {
+			rules[".mgHead"] = { right : this.scrollBarSize + "px" };
+		}
+		if (this.hasFoot) {
+			rules[".mgFoot"] = { bottom : this.scrollBarSize + "px", right : this.scrollBarSize + "px" };
+		}
+		if (this.hasFixedBody) {
+			rules[".mgBodyFixed"] =  { bottom : this.scrollBarSize + "px" };
+		}
+		if (allowColumnResize) {
+			rules[".mgResizeDragger"] = { bottom : this.scrollBarSize + "px" };
 		}
 		
 		while (true) {
@@ -362,12 +377,12 @@ var MooGrid = new Class({
 			);
 			
 			this.columnWidths[this.colIndex] = width;
-			this.Css.rules[".mgCol" + this.colIndex] = { width : width + "px" };
+			rules[".mgCol" + this.colIndex] = { width : width + "px" };
 			if (colBGColorsLength > this.colIndex && colBGColors[this.colIndex] !== "#ffffff") {
-				this.Css.rules[".mgCol" + this.colIndex]["background-color"] = colBGColors[this.colIndex];
+				rules[".mgCol" + this.colIndex]["background-color"] = colBGColors[this.colIndex];
 			}
 			if (allowColumnResize) {
-				this.Css.rules[".mgResizeSpan" + this.colIndex] = { "margin-left" : (width - 2) + "px" };
+				rules[".mgResizeSpan" + this.colIndex] = { "margin-left" : (width - 2) + "px" };
 			}
 			
 			this.colIndex++;
@@ -377,9 +392,9 @@ var MooGrid = new Class({
 		}
 		
 		this.colNodes = null;
-		this.Css.rules[".mgCell"] = { visibility : "visible" };
+		rules[".mgCell"] = { visibility : "visible" };
 		if (allowColumnResize) {
-			this.Css.rules[".mgResizeSpan"] = { display : "block", position : "absolute" };
+			rules[".mgResizeSpan"] = { display : "block", position : "absolute" };
 		}
 		this.setRules();
 	}, 

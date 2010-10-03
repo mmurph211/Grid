@@ -25,7 +25,9 @@
 	right : 0px;
 	width : 16px;
 	height : 16px;
-	background : transparent url("MooGrid.png") 0px -38px no-repeat;
+	background-color : transparent;
+	background-position : 0px -38px;
+	background-repeat: no-repeat;
 	cursor : nw-resize;
 }
 .mgResizeSpan {
@@ -39,7 +41,6 @@
 	position : absolute;
 	z-index : 5;
 	top : 0px;
-	bottom : 17px;
 	width : 3px;
 	background-color : #777;
 }
@@ -47,13 +48,11 @@
 	padding : 10px;
 	font-style : italic;
 }
-
 .mgHead {
 	position : absolute;
 	z-index : 2;
 	top : 0px;
 	left : 0px;
-	right : 17px;
 	overflow : hidden;
 }
 .mgBody {
@@ -65,11 +64,8 @@
 	position : absolute;
 	z-index : 2;
 	left : 0px;
-	bottom : 17px;
-	right : 17px;
 	overflow : hidden;
 }
-
 .mgHeadFixed {
 	position : absolute;
 	z-index : 3;
@@ -82,7 +78,6 @@
 	z-index : 1;
 	top : 0px;
 	left : 0px;
-	bottom : 17px;
 	overflow : hidden;
 }
 .mgFootFixed {
@@ -95,7 +90,6 @@
 .mgHeadStaticHidden .mgCell, .mgFootStaticHidden .mgCell {
 	visibility : hidden !important;
 }
-
 .mgCol {
 	display : inline-block;
 	*display : inline;
@@ -103,11 +97,12 @@
 	background-color : #fff;
 	vertical-align : top;
 }
-
 .mgHeadRow {
 	border-width : 0px 1px 1px 0px;
 	border-color : #aaa #ccc !important;
-	background : #a0c8ee url("MooGrid.png") 0px 0px repeat-x;
+	background-color : #a0c8ee;
+	background-position : 0px 0px;
+	background-repeat: repeat-x;
 	color : #111 !important;
 }
 .mgBodyRow {
@@ -116,9 +111,10 @@
 .mgFootRow {
 	border-width : 1px 1px 0px 0px;
 	border-color : #aaa #ccc !important;
-	background : #a0c8ee url("MooGrid.png") 0px -19px repeat-x;
+	background-color : #a0c8ee;
+	background-position : 0px -19px;
+	background-repeat: repeat-x;
 }
-
 .mgFixedCol .mgBodyRow {
 	background-color : #cee6fc;
 	border-color : #bbb #ccc !important;
@@ -131,4 +127,8 @@
 	vertical-align : top;
 	visibility : hidden;
 	cursor : default;
+}
+.mgBaseResize, .mgHeadRow, .mgFootRow {
+	background-image : url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA0CAMAAAC0EEhzAAAAS1BMVEWFhYX///+FhYWhye6jyu+ly++lzPCnzfCqz/Grz/Gs0PKv0vOy1PS11vW42PW72va+3PfB3vjE3/nG4frH4fnI4vrK5PvM5fzO5vyrwE43AAAAAnRSTlMAAHaTzTgAAACRSURBVBjTfc9bDoJAEAXRAhVfvHGA/a9UhIBjTeL5ILmX7tAwC5MwCiG8QoxB6IVOaIVGqIVKKIWn8BBuwlUovi6fB2fhJGmRrBSSfjY5LLr6vp6e/FwpVEItNEIrdEIvDEIQRmESZiGTvwVZriLnt8iJC5b3xCtrjifWfBTbfLSy52Niz1txzO8rUd4morykN2s7IaFNf/WDAAAAAElFTkSuQmCC);
+	*background-image : url("MooGrid.png");
 }
