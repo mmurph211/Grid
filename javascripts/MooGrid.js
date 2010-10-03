@@ -7,7 +7,8 @@
 ////////////////////////////////////
 var MooGrid = new Class({
 	Implements : Options, 
-	Binds : ["parseData_Xml", "parseData_Json", "alignColumns", "syncScrolls", "simulateMouseScroll", "initResizeGrid", "initResizeColumn", "selectRange", "clearTextSelections"], 
+	Binds : ["parseData_Xml", "parseData_Json", "alignColumns", "syncScrolls", "simulateMouseScroll", "initResizeGrid", "initResizeColumn", 
+		"selectRange", "clearTextSelections"], 
 	
 	options : {
 		noCache : true, 
@@ -17,7 +18,7 @@ var MooGrid = new Class({
 		allowMultipleSelections : false, 
 		supportMultipleGridsInView : false, 
 		fixedCols : 0, 
-		colBGColors : [], 
+		scrollLeftTo : 0, 
 		srcType : "", 
 		xml_remote : "", 
 		xml_local : "", 
@@ -25,7 +26,7 @@ var MooGrid = new Class({
 		json_local : {}, 
 		selectedBgColor : "#fef7dc", 
 		fixedSelectedBgColor : "#fef7dc", 
-		scrollLeftTo : 0
+		colBGColors : []
 	}, 
 	
 	Css : {
@@ -70,9 +71,7 @@ var MooGrid = new Class({
 		if (this.options.allowGridResize) {
 			this.baseResize = new Element("DIV", {
 				"class" : "mgBaseResize", 
-				"events" : {
-					"mousedown" : this.initResizeGrid
-				}
+				"events" : { "mousedown" : this.initResizeGrid }
 			}).inject(this.base);
 		}
 		
@@ -82,18 +81,12 @@ var MooGrid = new Class({
 		}
 		
 		this.columns = 0;
-		this.cellData = {
-			head : [], 
-			body : [], 
-			foot : []
-		};
+		this.cellData = { head : [], body : [], foot : [] };
 		
 		switch (this.options.srcType) {
 			case "xml_remote":
 				new Request({
-					method : "get", 
-					url : this.options.xml_remote, 
-					noCache : this.options.noCache
+					method : "get", url : this.options.xml_remote, noCache : this.options.noCache
 				}).addEvent("onComplete", this.parseData_Xml).send();
 				break;
 			case "xml_local":
@@ -109,10 +102,7 @@ var MooGrid = new Class({
 				break;
 			case "json_remote":
 				new Request.JSON({
-					method : "get", 
-					url : this.options.json_remote, 
-					noCache : this.options.noCache, 
-					secure : false
+					method : "get", url : this.options.json_remote, noCache : this.options.noCache, secure : false
 				}).addEvent("onComplete", this.parseData_Json).send();
 				break;
 			case "json_local":
@@ -142,23 +132,25 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	convertData_Xml : function(Body) {
-		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null));
-		if (!base) return;
+		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null)), 
+		    cells = (!!base) ? base.getElementsByTagName("row")[0].getElementsByTagName("cell").length : 0;
 		
 		var _convert = function(arr, rows, rowClass, isHeader) {
-			var row_index = rows.length;
-			var col_length = this.columns;
-			var allowColResize = isHeader && this.options.allowColumnResize;
-			rowClass = "<DIV class='" + rowClass;
+			var row_index = rows.length, 
+			    col_length = this.columns, 
+			    allowColResize = isHeader && this.options.allowColumnResize;
 			
+			rowClass = "<DIV class='" + rowClass;
 			while (row_index) {
-				var fullDiv = rowClass + (--row_index) + "'>";
-				var cells = rows[row_index].getElementsByTagName("cell");
-				var col_index = col_length;
+				var fullDiv = rowClass + (--row_index) + "'>", 
+				    cells = rows[row_index].getElementsByTagName("cell"), 
+				    col_index = col_length;
+				
 				while (col_index) {
-					var cell = cells[--col_index]
+					var cell = cells[--col_index];
 					arr[col_index][row_index] = fullDiv + (cell.textContent || cell.text || "&nbsp;");
 				}
+				
 				if (allowColResize) {
 					col_index = col_length;
 					while (col_index) {
@@ -169,7 +161,8 @@ var MooGrid = new Class({
 			}
 		}.bind(this);
 		
-		var cells = base.getElementsByTagName("row")[0].getElementsByTagName("cell").length;
+		if (!base) return;
+		
 		this.columns = cells;
 		while (cells) {
 			this.cellData.head[--cells] = [];
@@ -205,22 +198,24 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	convertData_Json : function(Body) {
-		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null));
-		if (!base) return;
+		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null)), 
+		    cells = (!!base) ? base[0].length : 0;
 		
 		var _convert = function(arr, rows, rowClass, isHeader) {
-			var row_index = rows.length;
-			var col_length = this.columns;
-			var allowColResize = isHeader && this.options.allowColumnResize;
-			rowClass = "<DIV class='" + rowClass;
+			var row_index = rows.length, 
+			    col_length = this.columns, 
+			    allowColResize = isHeader && this.options.allowColumnResize;
 			
+			rowClass = "<DIV class='" + rowClass;
 			while (row_index) {
-				var fullDiv = rowClass + (--row_index) + "'>";
-				var tempRow = rows[row_index];
-				var col_index = col_length;
+				var fullDiv = rowClass + (--row_index) + "'>", 
+				    tempRow = rows[row_index], 
+				    col_index = col_length;
+				
 				while (col_index) {
 					arr[--col_index][row_index] = fullDiv + (tempRow[col_index] || "&nbsp;");
 				}
+				
 				if (allowColResize) {
 					col_index = col_length;
 					while (col_index) {
@@ -231,7 +226,8 @@ var MooGrid = new Class({
 			}
 		}.bind(this);
 		
-		var cells = base[0].length;
+		if (!base) return;
+		
 		this.columns = cells;
 		while (cells) {
 			this.cellData.head[--cells] = [];
@@ -285,13 +281,18 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	generateGrid : function() {
-		var fixedCols = this.options.fixedCols;
+		var fixedCols = this.options.fixedCols, 
+		    allowColResize = this.options.allowColumnResize, 
+		    emptyHtml = { "fullHTML" : "", "fixedHTML" : "" };
+		
 		var _generate = function(cols, joinStr, closeStr) {
-			var html = [];
-			var col_index = cols.length;
+			var html = [], 
+			    col_index = cols.length;
+			
 			while (col_index) {
 				html[--col_index] = ["<DIV class='mgCol mgCol", col_index, ((col_index < fixedCols) ? " mgFixedCol'>" : "'>"), cols[col_index].join(joinStr), closeStr].join("");
 			}
+			
 			return {
 				"fullHTML" : html.join(""), 
 				"fixedHTML" : html.slice(0, fixedCols).join("")
@@ -303,11 +304,9 @@ var MooGrid = new Class({
 		this.hasFixedBody = (this.options.fixedCols > 0);
 		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
 		
-		var allowColResize = this.options.allowColumnResize;
-		var emptyHtml = { "fullHTML" : "", "fixedHTML" : "" };
-		var hHTML = (this.hasHead) ? _generate(this.cellData.head, (allowColResize) ? "" : "</DIV>", (allowColResize) ? "</DIV>" : "</DIV></DIV>") : emptyHtml;
-		var bHTML = (this.hasBody) ? _generate(this.cellData.body, "</DIV>", "</DIV></DIV>") : emptyHtml;
-		var fHTML = (this.hasFoot) ? _generate(this.cellData.foot, "</DIV>", "</DIV></DIV>") : emptyHtml;
+		var hHTML = (this.hasHead) ? _generate(this.cellData.head, (allowColResize) ? "" : "</DIV>", (allowColResize) ? "</DIV>" : "</DIV></DIV>") : emptyHtml, 
+		    bHTML = (this.hasBody) ? _generate(this.cellData.body, "</DIV>", "</DIV></DIV>") : emptyHtml, 
+		    fHTML = (this.hasFoot) ? _generate(this.cellData.foot, "</DIV>", "</DIV></DIV>") : emptyHtml;
 		
 		this.headStatic.set("html", hHTML.fullHTML);
 		this.bodyStatic.set("html", bHTML.fullHTML);
@@ -335,10 +334,11 @@ var MooGrid = new Class({
 	alignColumns : function(reAlign) {
 		if (this.columns === 0) return;
 		
-		var allowColumnResize = this.options.allowColumnResize;
-		var colBGColors = this.options.colBGColors;
-		var colBGColorsLength = colBGColors.length;
-		var rules = this.Css.rules;
+		var allowColumnResize = this.options.allowColumnResize, 
+		    colBGColors = this.options.colBGColors, 
+		    colBGColorsLength = colBGColors.length, 
+		    rules = this.Css.rules;
+		
 		this.scrollBarSize = this.body.offsetWidth - this.body.clientWidth;
 		this.columnWidths = [];
 		this.colIndex = 0;
@@ -369,12 +369,12 @@ var MooGrid = new Class({
 		}
 		
 		while (true) {
-			var targets = [this.colNodes.head[this.colIndex], this.colNodes.body[this.colIndex], this.colNodes.foot[this.colIndex]];
-			var width = Math.max(
-				(!!targets[0]) ? targets[0].offsetWidth : 0, 
-				(!!targets[1]) ? targets[1].offsetWidth : 0, 
-				(!!targets[2]) ? targets[2].offsetWidth : 0
-			);
+			var targets = [this.colNodes.head[this.colIndex], this.colNodes.body[this.colIndex], this.colNodes.foot[this.colIndex]], 
+			    width = Math.max(
+			    	(!!targets[0]) ? targets[0].offsetWidth : 0, 
+			    	(!!targets[1]) ? targets[1].offsetWidth : 0, 
+			    	(!!targets[2]) ? targets[2].offsetWidth : 0
+			    );
 			
 			this.columnWidths[this.colIndex] = width;
 			rules[".mgCol" + this.colIndex] = { width : width + "px" };
@@ -484,10 +484,11 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	resizeGrid : function(event) {
-		var xDif = event.page.x - this.ResizeInfo.origX;
-		var yDif = event.page.y - this.ResizeInfo.origY;
-		var newWidth = (xDif >= 0) ? this.ResizeInfo.origWidth + xDif : this.ResizeInfo.origWidth - (-1 * xDif);
-		var newHeight = (yDif >= 0) ? this.ResizeInfo.origHeight + yDif : this.ResizeInfo.origHeight - (-1 * yDif);
+		var xDif = event.page.x - this.ResizeInfo.origX, 
+		    yDif = event.page.y - this.ResizeInfo.origY, 
+		    newWidth = (xDif >= 0) ? this.ResizeInfo.origWidth + xDif : this.ResizeInfo.origWidth - (-1 * xDif), 
+		    newHeight = (yDif >= 0) ? this.ResizeInfo.origHeight + yDif : this.ResizeInfo.origHeight - (-1 * yDif);
+		
 		newWidth = (newWidth < 50) ? 50 : newWidth;
 		newHeight = (newHeight < 25) ? 25 : newHeight;
 		
@@ -507,8 +508,8 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	initResizeColumn : function(event) {
-		var target = $(event.target);
-		var col = target.get("class").replace(/mgResizeSpan/g, "").toInt();
+		var target = $(event.target), 
+		    col = target.get("class").replace(/mgResizeSpan/g, "").toInt();
 		
 		this.ResizeInfo = {
 			resizer : target, 
@@ -540,10 +541,10 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	resizeColumn : function(event) {
-		var widthChange = event.client.x - this.ResizeInfo.origX;
-		var newWidth = (widthChange >= 0) ? this.ResizeInfo.origWidth + widthChange : this.ResizeInfo.origWidth - (-1 * widthChange);
-		newWidth = (newWidth < 15) ? 15 : newWidth;
-		var newLeft = (widthChange >= 0) ? this.ResizeInfo.lPos + widthChange : this.ResizeInfo.lPos - (-1 * widthChange);
+		var widthChange = event.client.x - this.ResizeInfo.origX, 
+		    newWidth = (widthChange >= 0) ? this.ResizeInfo.origWidth + widthChange : this.ResizeInfo.origWidth - (-1 * widthChange), 
+		    newWidth = (newWidth < 15) ? 15 : newWidth, 
+		    newLeft = (widthChange >= 0) ? this.ResizeInfo.lPos + widthChange : this.ResizeInfo.lPos - (-1 * widthChange);
 		
 		this.ResizeInfo.newWidth = newWidth;
 		if (this.ResizeInfo.lastLeft !== newLeft && newWidth > 15) {
