@@ -77,7 +77,7 @@ var MooGrid = new Class({
 		
 		if (this.options.allowSelections || this.options.allowMultipleSelections) {
 			this.options.allowSelections = true;
-			this.body.addEvent("mousedown:relay(div.mgBodyRow)", this.selectRange);
+			this.body.addEvent("mousedown:relay(div.mgBRow)", this.selectRange);
 		}
 		
 		this.columns = 0;
@@ -161,7 +161,7 @@ var MooGrid = new Class({
 					col_index = col_length;
 					while (col_index) {
 						col_index--; // Not in next line due to Opera bug
-						arr[col_index][row_index] += ("</DIV><SPAN class='mgResizeSpan' col='" + col_index + "'>&nbsp;</SPAN>");
+						arr[col_index][row_index] += ("</DIV><SPAN class='mgRSpan' col='" + col_index + "'>&nbsp;</SPAN>");
 					}
 				}
 			}
@@ -177,17 +177,17 @@ var MooGrid = new Class({
 		}
 		
 		if (!!Body.Head) {
-			_convert(this.cellData.head, Body.Head.getElementsByTagName("row"), "mgCell mgHeadRow mgRow", true);
+			_convert(this.cellData.head, Body.Head.getElementsByTagName("row"), "mgC mgHRow mgRow", true);
 		} else {
 			this.Css.rules[".mgHead"] = { display : "none" };
 		}
 		if (!!Body.Body) {
-			_convert(this.cellData.body, Body.Body.getElementsByTagName("row"), "mgCell mgBodyRow mgRow", false);
+			_convert(this.cellData.body, Body.Body.getElementsByTagName("row"), "mgC mgBRow mgRow", false);
 		} else {
 			this.Css.rules[".mgBodyFixed"] = { display : "none" };
 		}
 		if (!!Body.Foot) {
-			_convert(this.cellData.foot, Body.Foot.getElementsByTagName("row"), "mgCell mgFootRow mgRow", false);
+			_convert(this.cellData.foot, Body.Foot.getElementsByTagName("row"), "mgC mgFRow mgRow", false);
 		} else {
 			this.Css.rules[".mgFoot"] = { display : "none" };
 		}
@@ -230,7 +230,7 @@ var MooGrid = new Class({
 					col_index = col_length;
 					while (col_index) {
 						col_index--; // Not in next line due to Opera bug
-						arr[col_index][row_index] += ("</DIV><SPAN class='mgResizeSpan mgResizeSpan" + col_index + "'>&nbsp;</SPAN>");
+						arr[col_index][row_index] += ("</DIV><SPAN class='mgRSpan mgRSpan" + col_index + "'>&nbsp;</SPAN>");
 					}
 				}
 			}
@@ -246,17 +246,17 @@ var MooGrid = new Class({
 		}
 		
 		if (!!Body.Head) {
-			_convert(this.cellData.head, Body.Head, "mgCell mgHeadRow mgRow", true);
+			_convert(this.cellData.head, Body.Head, "mgC mgHRow mgRow", true);
 		} else {
 			this.Css.rules[".mgHead"] = { display : "none" };
 		}
 		if (!!Body.Body) {
-			_convert(this.cellData.body, Body.Body, "mgCell mgBodyRow mgRow", false);
+			_convert(this.cellData.body, Body.Body, "mgC mgBRow mgRow", false);
 		} else {
 			this.Css.rules[".mgBodyFixed"] = { display : "none" };
 		}
 		if (!!Body.Foot) {
-			_convert(this.cellData.foot, Body.Foot, "mgCell mgFootRow mgRow", false);
+			_convert(this.cellData.foot, Body.Foot, "mgC mgFRow mgRow", false);
 		} else {
 			this.Css.rules[".mgFoot"] = { display : "none" };
 		}
@@ -336,7 +336,7 @@ var MooGrid = new Class({
 		this.footFixed.set("html", fHTML.fixedHTML);
 		
 		if (allowColResize) {
-			this.base.addEvent("mousedown:relay(span.mgResizeSpan)", this.initResizeColumn);
+			this.base.addEvent("mousedown:relay(span.mgRSpan)", this.initResizeColumn);
 		}
 	}, 
 	
@@ -365,7 +365,7 @@ var MooGrid = new Class({
 		} else {
 			this.scrollBarSize = this.body.offsetWidth - this.body.clientWidth;
 			
-			rules[".mgCell"] = { visibility : "visible" };
+			rules[".mgC"] = { visibility : "visible" };
 			rules[".mgCol"] = { "background-color" : "#fff" };
 			if (this.hasHead) {
 				rules[".mgHead"] = { right : this.scrollBarSize + "px" };
@@ -377,7 +377,7 @@ var MooGrid = new Class({
 				rules[(!Browser.Engine.trident5) ? ".mgBodyFixed" : ".mgBodyFixed2"] =  { bottom : this.scrollBarSize + "px" };
 			}
 			if (allowColumnResize) {
-				rules[".mgResizeSpan"] = { display : "block", position : "absolute" };
+				rules[".mgRSpan"] = { display : "block", position : "absolute" };
 				rules[".mgResizeDragger"] = { bottom : this.scrollBarSize + "px" };
 			}
 		}
@@ -396,7 +396,7 @@ var MooGrid = new Class({
 				rules[".mgCol" + this.colIndex]["background-color"] = colBGColors[this.colIndex];
 			}
 			if (allowColumnResize) {
-				rules[".mgResizeSpan" + this.colIndex] = { "margin-left" : (width - 2) + "px" };
+				rules[".mgRSpan" + this.colIndex] = { "margin-left" : (width - 2) + "px" };
 			}
 			
 			this.colIndex++;
@@ -519,7 +519,7 @@ var MooGrid = new Class({
 	//////////////////////////////////////////////////////////////////////////////////
 	initResizeColumn : function(event) {
 		var target = $(event.target), 
-		    col = target.get("class").replace(/mgResizeSpan/g, "").toInt();
+		    col = target.get("class").replace(/mgRSpan/g, "").toInt();
 		
 		this.ResizeInfo = {
 			resizer : target, 
@@ -574,7 +574,7 @@ var MooGrid = new Class({
 		
 		this.ResizeInfo.dragger.dispose();
 		this.Css.rules[".mgCol" + this.ResizeInfo.cIndex]["width"] = this.ResizeInfo.newWidth + "px";
-		this.Css.rules[".mgResizeSpan" + this.ResizeInfo.cIndex]["margin-left"] = (this.ResizeInfo.newWidth - 2) + "px";
+		this.Css.rules[".mgRSpan" + this.ResizeInfo.cIndex]["margin-left"] = (this.ResizeInfo.newWidth - 2) + "px";
 		this.setRules();
 		this.syncScrolls();
 		this.columnWidths[this.ResizeInfo.cIndex] = this.ResizeInfo.newWidth;
