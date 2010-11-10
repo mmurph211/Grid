@@ -456,10 +456,10 @@ var MooGrid = new Class({
 			j = 0;
 			cssElText = [];
 			for (var prop in rules[rule]) {
-				cssElText[j++] = prop + " : " + rules[rule][prop] + ";";
+				cssElText[j++] = prop + ":" + rules[rule][prop] + ";";
 			}
 			if (j > 0) {
-				cssText[i++] = idRulePrefix + rule + " { " + cssElText.join(" ") + " }";
+				cssText[i++] = idRulePrefix + rule + "{" + ((j === 1) ? cssElText[0] : cssElText.join("")) + "}";
 			}
 		}
 		
