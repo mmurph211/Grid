@@ -4,7 +4,7 @@
 	<title>Grid</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=8">
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-	<!--<link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css">-->
+	<link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css">
 	<style>
 		html,body{height:100%;margin:0px;padding:0px;overflow:hidden;}
 		h1{display:block;margin:20px 20px 0px 20px;line-height:21px;font-size:21px;font-family:Verdana;color:#333;}
@@ -16,6 +16,7 @@
 		#dev{display:none;margin:0px 20px 20px 20px;width:790px;height:120px;}
 		#srcXml{display:none;}
 		
+		/*
 		.mgBase{position:relative;border-width:1px 0px 0px 1px;border-color:#9eb6ce;border-style:solid;width:100%;height:100%;padding:0px;background-color:#fff;font-family:Verdana;font-size:0.70em;line-height:100%;white-space:nowrap;overflow:hidden;}
 		.mgBaseResize{position:absolute;z-index:5;bottom:0px;right:0px;width:16px;height:16px;background-color:transparent;background-position:0px -38px;background-repeat:no-repeat;cursor:nw-resize;}
 		.mgResizeSpan{top:0px;display:none;width:4px;height:19px;cursor:col-resize;}
@@ -35,6 +36,7 @@
 		.mgFixedCol .mgBodyRow{background-color:#cee6fc;border-color:#bbb #ccc !important;}
 		.mgCell{padding:4px 6px 4px 4px;border-color:#ddd #eee;border-style:solid;color:#333;vertical-align:top;visibility:hidden;cursor:default;}
 		.mgBaseResize, .mgHeadRow, .mgFootRow{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA0CAMAAAC0EEhzAAAAS1BMVEWFhYX///+FhYWhye6jyu+ly++lzPCnzfCqz/Grz/Gs0PKv0vOy1PS11vW42PW72va+3PfB3vjE3/nG4frH4fnI4vrK5PvM5fzO5vyrwE43AAAAAnRSTlMAAHaTzTgAAACRSURBVBjTfc9bDoJAEAXRAhVfvHGA/a9UhIBjTeL5ILmX7tAwC5MwCiG8QoxB6IVOaIVGqIVKKIWn8BBuwlUovi6fB2fhJGmRrBSSfjY5LLr6vp6e/FwpVEItNEIrdEIvDEIQRmESZiGTvwVZriLnt8iJC5b3xCtrjifWfBTbfLSy52Niz1txzO8rUd4morykN2s7IaFNf/WDAAAAAElFTkSuQmCC);*background-image:url("stylesheets/MooGrid.png");}
+		*/
 	</style>
 </head>
 <body>
@@ -47,12 +49,12 @@
 	<textarea id="dev"></textarea><br>
 	<textarea id="srcXml"></textarea>
 	
-	<!--
 	<script type="text/javascript" src="javascripts/mootools-1.2.5-core-nc.js"></script>
 	<script type="text/javascript" src="javascripts/mootools-1.2.4.4-more.js"></script>
 	<script type="text/javascript" src="javascripts/MooGrid.js"></script>
-	-->
+	<!--
 	<script type="text/javascript" src="javascripts/demo_compressed.js"></script>
+	-->
 	<script type="text/javascript">
 		window.addEvent("domready", function(event) {
 			var myGrid = new MooGrid("demoDiv", {

@@ -339,7 +339,6 @@ var MooGrid = new Class({
 		    colBGColorsLength = colBGColors.length, 
 		    rules = this.Css.rules;
 		
-		this.scrollBarSize = this.body.offsetWidth - this.body.clientWidth;
 		this.columnWidths = [];
 		this.colIndex = 0;
 		this.colNodes = {
@@ -353,19 +352,24 @@ var MooGrid = new Class({
 				delete rules[".mgCol" + i].width;
 			}
 			this.setRules();
-		}
-		
-		if (this.hasHead) {
-			rules[".mgHead"] = { right : this.scrollBarSize + "px" };
-		}
-		if (this.hasFoot) {
-			rules[".mgFoot"] = { bottom : this.scrollBarSize + "px", right : this.scrollBarSize + "px" };
-		}
-		if (this.hasFixedBody) {
-			rules[".mgBodyFixed"] =  { bottom : this.scrollBarSize + "px" };
-		}
-		if (allowColumnResize) {
-			rules[".mgResizeDragger"] = { bottom : this.scrollBarSize + "px" };
+		} else {
+			this.scrollBarSize = this.body.offsetWidth - this.body.clientWidth;
+			
+			rules[".mgCell"] = { visibility : "visible" };
+			rules[".mgCol"] = { "background-color" : "#fff" };
+			if (this.hasHead) {
+				rules[".mgHead"] = { right : this.scrollBarSize + "px" };
+			}
+			if (this.hasFoot) {
+				rules[".mgFoot"] = { bottom : this.scrollBarSize + "px", right : this.scrollBarSize + "px" };
+			}
+			if (this.hasFixedBody) {
+				rules[(!Browser.Engine.trident5) ? ".mgBodyFixed" : ".mgBodyFixed2"] =  { bottom : this.scrollBarSize + "px" };
+			}
+			if (allowColumnResize) {
+				rules[".mgResizeSpan"] = { display : "block", position : "absolute" };
+				rules[".mgResizeDragger"] = { bottom : this.scrollBarSize + "px" };
+			}
 		}
 		
 		while (true) {
@@ -392,10 +396,6 @@ var MooGrid = new Class({
 		}
 		
 		this.colNodes = null;
-		rules[".mgCell"] = { visibility : "visible" };
-		if (allowColumnResize) {
-			rules[".mgResizeSpan"] = { display : "block", position : "absolute" };
-		}
 		this.setRules();
 	}, 
 	
@@ -598,7 +598,7 @@ var MooGrid = new Class({
 		    indexCounter = 0, 
 		    selectedIndexes = this.selectedIndexes, 
 		    rowIndexSelected = selectedIndexes.contains(rowIndex), 
-		    controlPressed = event.control, 
+		    controlPressed = (event.control || (event.target.type || "").toLowerCase() === "checkbox"), 
 		    shiftPressed = event.shift;
 		
 		if (!this.options.allowMultipleSelections || this.selectedIndexes.length === 0 || (!shiftPressed && !controlPressed)) {

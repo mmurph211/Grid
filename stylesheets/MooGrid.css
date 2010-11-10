@@ -75,10 +75,18 @@
 }
 .mgBodyFixed {
 	position : absolute;
+	*position : static;
 	z-index : 1;
 	top : 0px;
 	left : 0px;
 	overflow : hidden;
+}
+.mgBodyFixed2 { /* IE 7 */
+	*position : absolute;
+	*z-index : 1;
+	*top : 0px;
+	*left : 0px;
+	*overflow : hidden;
 }
 .mgFootFixed {
 	position : absolute;
