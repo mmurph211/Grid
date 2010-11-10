@@ -133,22 +133,28 @@ var MooGrid = new Class({
 	//////////////////////////////////////////////////////////////////////////////////
 	convertData_Xml : function(Body) {
 		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null)), 
-		    cells = (!!base) ? base.getElementsByTagName("row")[0].getElementsByTagName("cell").length : 0;
+		    cells = (!!base) ? base.getElementsByTagName("row")[0].getElementsByTagName("cell").length : 0, 
+		    col_length = cells, 
+		    cellText = (Browser.Engine.trident) ? "text" : "textContent", 
+		    allowColumnResize = this.options.allowColumnResize;
 		
 		var _convert = function(arr, rows, rowClass, isHeader) {
 			var row_index = rows.length, 
-			    col_length = this.columns, 
-			    allowColResize = isHeader && this.options.allowColumnResize;
+			    allowColResize = isHeader && allowColumnResize, 
+			    fullDiv, 
+			    cell, 
+			    cells, 
+			    col_index;
 			
 			rowClass = "<DIV class='" + rowClass;
 			while (row_index) {
-				var fullDiv = rowClass + (--row_index) + "'>", 
-				    cells = rows[row_index].getElementsByTagName("cell"), 
-				    col_index = col_length;
+				fullDiv = rowClass + (--row_index) + "'>";
+				cells = rows[row_index].getElementsByTagName("cell");
+				col_index = col_length;
 				
 				while (col_index) {
-					var cell = cells[--col_index];
-					arr[col_index][row_index] = fullDiv + (cell.textContent || cell.text || "&nbsp;");
+					cell = cells[--col_index];
+					arr[col_index][row_index] = fullDiv + (cell[cellText] || "&nbsp;");
 				}
 				
 				if (allowColResize) {
@@ -159,7 +165,7 @@ var MooGrid = new Class({
 					}
 				}
 			}
-		}.bind(this);
+		};
 		
 		if (!base) return;
 		
@@ -199,18 +205,22 @@ var MooGrid = new Class({
 	//////////////////////////////////////////////////////////////////////////////////
 	convertData_Json : function(Body) {
 		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null)), 
-		    cells = (!!base) ? base[0].length : 0;
+		    cells = (!!base) ? base[0].length : 0, 
+		    col_length = cells, 
+		    allowColumnResize = this.options.allowColumnResize;
 		
 		var _convert = function(arr, rows, rowClass, isHeader) {
 			var row_index = rows.length, 
-			    col_length = this.columns, 
-			    allowColResize = isHeader && this.options.allowColumnResize;
+			    allowColResize = isHeader && allowColumnResize, 
+			    fullDiv, 
+			    tempRow, 
+			    col_index;
 			
 			rowClass = "<DIV class='" + rowClass;
 			while (row_index) {
-				var fullDiv = rowClass + (--row_index) + "'>", 
-				    tempRow = rows[row_index], 
-				    col_index = col_length;
+				fullDiv = rowClass + (--row_index) + "'>";
+				tempRow = rows[row_index];
+				col_index = col_length;
 				
 				while (col_index) {
 					arr[--col_index][row_index] = fullDiv + (tempRow[col_index] || "&nbsp;");
@@ -224,7 +234,7 @@ var MooGrid = new Class({
 					}
 				}
 			}
-		}.bind(this);
+		};
 		
 		if (!base) return;
 		
