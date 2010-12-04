@@ -4,7 +4,7 @@
 	<title>Grid</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=8">
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-	<link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css">
+	<!-- <link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css"> -->
 	<style>
 		html,body{height:100%;margin:0px;padding:0px;overflow:hidden;}
 		h1{display:block;margin:20px 20px 0px 20px;line-height:21px;font-size:21px;font-family:Verdana;color:#333;}
@@ -16,27 +16,26 @@
 		#dev{display:none;margin:0px 20px 20px 20px;width:790px;height:120px;}
 		#srcXml{display:none;}
 		
-		/*
-		.mgBase{position:relative;border-width:1px 0px 0px 1px;border-color:#9eb6ce;border-style:solid;width:100%;height:100%;padding:0px;background-color:#fff;font-family:Verdana;font-size:0.70em;line-height:100%;white-space:nowrap;overflow:hidden;}
-		.mgBaseResize{position:absolute;z-index:5;bottom:0px;right:0px;width:16px;height:16px;background-color:transparent;background-position:0px -38px;background-repeat:no-repeat;cursor:nw-resize;}
-		.mgResizeSpan{top:0px;display:none;width:4px;height:19px;cursor:col-resize;}
-		.mgResizeDragger{position:absolute;z-index:5;top:0px;width:3px;background-color:#777;}
-		.mgEmptySetMsg{padding:10px;font-style:italic;}
-		.mgHead{position:absolute;z-index:2;top:0px;left:0px;overflow:hidden;}
-		.mgBody{width:100%;height:100%;overflow:scroll;}
-		.mgFoot{position:absolute;z-index:2;left:0px;overflow:hidden;}
-		.mgHeadFixed{position:absolute;z-index:3;top:0px;left:0px;overflow:hidden;}
-		.mgBodyFixed{position:absolute;z-index:1;top:0px;left:0px;overflow:hidden;}
-		.mgFootFixed{position:absolute;z-index:3;bottom:0px;left:0px;overflow:hidden;}
-		.mgHeadStaticHidden .mgCell, .mgFootStaticHidden .mgCell{visibility:hidden !important;}
-		.mgCol{display:inline-block;*display:inline;zoom:1;background-color:#fff;vertical-align:top;}
-		.mgHeadRow{border-width:0px 1px 1px 0px;border-color:#aaa #ccc !important;background-color:#a0c8ee;background-position:0px 0px;background-repeat:repeat-x;color:#111 !important;}
-		.mgBodyRow{border-width:0px 1px 1px 0px;}
-		.mgFootRow{border-width:1px 1px 0px 0px;border-color:#aaa #ccc !important;background-color:#a0c8ee;background-position:0px -19px;background-repeat:repeat-x;}
-		.mgFixedCol .mgBodyRow{background-color:#cee6fc;border-color:#bbb #ccc !important;}
-		.mgCell{padding:4px 6px 4px 4px;border-color:#ddd #eee;border-style:solid;color:#333;vertical-align:top;visibility:hidden;cursor:default;}
-		.mgBaseResize, .mgHeadRow, .mgFootRow{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA0CAMAAAC0EEhzAAAAS1BMVEWFhYX///+FhYWhye6jyu+ly++lzPCnzfCqz/Grz/Gs0PKv0vOy1PS11vW42PW72va+3PfB3vjE3/nG4frH4fnI4vrK5PvM5fzO5vyrwE43AAAAAnRSTlMAAHaTzTgAAACRSURBVBjTfc9bDoJAEAXRAhVfvHGA/a9UhIBjTeL5ILmX7tAwC5MwCiG8QoxB6IVOaIVGqIVKKIWn8BBuwlUovi6fB2fhJGmRrBSSfjY5LLr6vp6e/FwpVEItNEIrdEIvDEIQRmESZiGTvwVZriLnt8iJC5b3xCtrjifWfBTbfLSy52Niz1txzO8rUd4morykN2s7IaFNf/WDAAAAAElFTkSuQmCC);*background-image:url("stylesheets/MooGrid.png");}
-		*/
+		.mgBase{position:relative;border-width:1px 0 0 1px;border-color:#9eb6ce;border-style:solid;width:100%;height:100%;padding:0;background-color:#fff;font-family:Verdana;font-size:.70em;line-height:100%;white-space:nowrap;overflow:hidden}
+		.mgBaseResize{position:absolute;z-index:5;bottom:0;right:0;width:16px;height:16px;background-color:transparent;background-position:0 -38px;background-repeat:no-repeat;cursor:nw-resize}
+		.mgRS{display:none;margin:0 0 -19px 0;width:4px;height:19px;cursor:e-resize}
+		.mgResizeDragger{position:absolute;z-index:5;top:0;width:3px;background-color:#777}
+		.mgEmptySetMsg{padding:10px;font-style:italic}
+		.mgHead{position:absolute;z-index:2;top:0;left:0;overflow:hidden}
+		.mgBody{width:100%;height:100%;overflow:scroll}
+		.mgFoot{position:absolute;z-index:2;left:0;overflow:hidden}
+		.mgHeadFixed{position:absolute;z-index:3;top:0;left:0;overflow:hidden}
+		.mgBodyFixed{position:absolute;*position:static;z-index:1;top:0;left:0;overflow:hidden}
+		.mgBodyFixed2{*position:absolute;*z-index:1;*top:0;*left:0;*overflow:hidden}
+		.mgFootFixed{position:absolute;z-index:3;bottom:0;left:0;overflow:hidden}
+		.mgHeadStaticHidden .mgC,.mgFootStaticHidden .mgC{visibility:hidden!important}
+		.mgCl{display:inline-block;*display:inline;zoom:1;vertical-align:top}
+		.mgHR{border-width:0 1px 1px 0;border-color:#aaa #ccc!important;background-color:#a0c8ee;background-position:0 0;background-repeat:repeat-x;color:#111!important}
+		.mgBR{border-width:0 1px 1px 0}
+		.mgFR{border-width:1px 1px 0 0;border-color:#aaa #ccc!important;background-color:#a0c8ee;background-position:0 -19px;background-repeat:repeat-x}
+		.mgFCl .mgBR{background-color:#cee6fc;border-color:#bbb #ccc!important}
+		.mgC{padding:4px 6px 4px 4px;border-color:#ddd #eee;border-style:solid;color:#333;vertical-align:top;visibility:hidden;cursor:default}
+		.mgBaseResize,.mgHR,.mgFR{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA0CAMAAAC0EEhzAAAAS1BMVEWFhYX///+FhYWhye6jyu+ly++lzPCnzfCqz/Grz/Gs0PKv0vOy1PS11vW42PW72va+3PfB3vjE3/nG4frH4fnI4vrK5PvM5fzO5vyrwE43AAAAAnRSTlMAAHaTzTgAAACRSURBVBjTfc9bDoJAEAXRAhVfvHGA/a9UhIBjTeL5ILmX7tAwC5MwCiG8QoxB6IVOaIVGqIVKKIWn8BBuwlUovi6fB2fhJGmRrBSSfjY5LLr6vp6e/FwpVEItNEIrdEIvDEIQRmESZiGTvwVZriLnt8iJC5b3xCtrjifWfBTbfLSy52Niz1txzO8rUd4morykN2s7IaFNf/WDAAAAAElFTkSuQmCC);*background-image:url("stylesheets/MooGrid.png")}
 	</style>
 </head>
 <body>
@@ -49,12 +48,12 @@
 	<textarea id="dev"></textarea><br>
 	<textarea id="srcXml"></textarea>
 	
-	<script type="text/javascript" src="javascripts/mootools-1.2.5-core-nc.js"></script>
-	<script type="text/javascript" src="javascripts/mootools-1.2.4.4-more.js"></script>
-	<script type="text/javascript" src="javascripts/MooGrid.js"></script>
 	<!--
-	<script type="text/javascript" src="javascripts/demo_compressed.js"></script>
+	<script type="text/javascript" src="javascripts/mootools-core-1.3-full-nocompat-yc.js"></script>
+	<script type="text/javascript" src="javascripts/mootools-more.js"></script>
+	<script type="text/javascript" src="javascripts/MooGrid.js"></script>
 	-->
+	<script type="text/javascript" src="javascripts/demo_compressed.js"></script>
 	<script type="text/javascript">
 		window.addEvent("domready", function(event) {
 			var myGrid = new MooGrid("demoDiv", {

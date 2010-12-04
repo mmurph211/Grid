@@ -31,11 +31,11 @@
 	cursor : nw-resize;
 }
 .mgRS {
-	top : 0px;
 	display : none;
+	margin : 0px 0px -19px 0px;
 	width : 4px;
 	height : 19px;
-	cursor : col-resize;
+	cursor : e-resize;
 }
 .mgResizeDragger {
 	position : absolute;
@@ -102,7 +102,6 @@
 	display : inline-block;
 	*display : inline;
 	zoom : 1;
-	background-color : #fff;
 	vertical-align : top;
 }
 .mgHR {

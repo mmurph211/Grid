@@ -64,7 +64,7 @@ var MooGrid = new Class({
 		this.footFixed = new Element("DIV", { "class" : "mgFootFixed" }).inject(this.foot);
 		this.footStatic = new Element("DIV", { "class" : "mgFootStatic" }).inject(this.foot);
 		
-		if (this.options.fixedCols > 0 && !Browser.Engine.trident) { // Simulate some degree of scrolling over non-scrollable content
+		if (this.options.fixedCols > 0 && !Browser.ie) { // Simulate some degree of scrolling over non-scrollable content
 			this.bodyFixed.addEvent("mousewheel", this.simulateMouseScroll);
 		}
 		
@@ -91,7 +91,7 @@ var MooGrid = new Class({
 				break;
 			case "xml_local":
 				var xml = null;
-				if (Browser.Engine.trident) {
+				if (Browser.ie) {
 					xml = new ActiveXObject("Microsoft.XMLDOM");
 					xml.async = false;
 					xml.loadXML(this.options.xml_local);
@@ -135,7 +135,7 @@ var MooGrid = new Class({
 		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null)), 
 		    cells = (!!base) ? base.getElementsByTagName("row")[0].getElementsByTagName("cell").length : 0, 
 		    col_length = cells, 
-		    cellText = (Browser.Engine.trident) ? "text" : "textContent", 
+		    cellText = (Browser.ie) ? "text" : "textContent", 
 		    allowColumnResize = this.options.allowColumnResize;
 		
 		var _convert = function(arr, rows, rowClass, isHeader) {
@@ -161,7 +161,7 @@ var MooGrid = new Class({
 					col_index = col_length;
 					while (col_index) {
 						col_index--; // Not in next line due to Opera bug
-						arr[col_index][row_index] += ("</DIV><SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>");
+						arr[col_index][row_index] = "<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>" + arr[col_index][row_index];
 					}
 				}
 			}
@@ -195,7 +195,7 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	parseData_Json : function(responseJSON, responseText) {
-		if ($type(responseJSON) === "object") {
+		if (typeOf(responseJSON) === "object") {
 			this.convertData_Json(responseJSON);
 		}
 		
@@ -230,7 +230,7 @@ var MooGrid = new Class({
 					col_index = col_length;
 					while (col_index) {
 						col_index--; // Not in next line due to Opera bug
-						arr[col_index][row_index] += ("</DIV><SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>");
+						arr[col_index][row_index] = "<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>" + arr[col_index][row_index];
 					}
 				}
 			}
@@ -282,7 +282,7 @@ var MooGrid = new Class({
 			this.body.scrollLeft = this.options.scrollLeftTo;
 		}
 		
-		if (!Browser.Engine.trident5 && !Browser.Engine.trident6) {
+		if (!Browser.ie7 && !Browser.ie8) {
 			this.alignColumns(false);
 		} else {
 			setTimeout(this.alignColumns.pass(false), 25);
@@ -295,12 +295,12 @@ var MooGrid = new Class({
 		    allowColResize = this.options.allowColumnResize, 
 		    emptyHtml = { "fullHTML" : "", "fixedHTML" : "" };
 		
-		var _generate = function(cols, joinStr, closeStr) {
+		var _generate = function(cols) {
 			var html = [], 
 			    col_index = cols.length;
 			
 			while (col_index) {
-				html[--col_index] = ["<DIV class='mgCl mgCl", col_index, ((col_index < fixedCols) ? " mgFCl'>" : "'>"), cols[col_index].join(joinStr), closeStr].join("");
+				html[--col_index] = ["<DIV class='mgCl mgCl", col_index, ((col_index < fixedCols) ? " mgFCl'>" : "'>"), cols[col_index].join("</DIV>"), "</DIV></DIV>"].join("");
 			}
 			
 			return {
@@ -314,9 +314,9 @@ var MooGrid = new Class({
 		this.hasFixedBody = (this.options.fixedCols > 0);
 		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
 		
-		var hHTML = (this.hasHead) ? _generate(this.cellData.head, (allowColResize) ? "" : "</DIV>", (allowColResize) ? "</DIV>" : "</DIV></DIV>") : emptyHtml, 
-		    bHTML = (this.hasBody) ? _generate(this.cellData.body, "</DIV>", "</DIV></DIV>") : emptyHtml, 
-		    fHTML = (this.hasFoot) ? _generate(this.cellData.foot, "</DIV>", "</DIV></DIV>") : emptyHtml;
+		var hHTML = (this.hasHead) ? _generate(this.cellData.head) : emptyHtml, 
+		    bHTML = (this.hasBody) ? _generate(this.cellData.body) : emptyHtml, 
+		    fHTML = (this.hasFoot) ? _generate(this.cellData.foot) : emptyHtml;
 		
 		this.headStatic.set("html", hHTML.fullHTML);
 		this.bodyStatic.set("html", bHTML.fullHTML);
@@ -374,10 +374,10 @@ var MooGrid = new Class({
 				rules[".mgFoot"] = { bottom : this.scrollBarSize + "px", right : this.scrollBarSize + "px" };
 			}
 			if (this.hasFixedBody) {
-				rules[(!Browser.Engine.trident5) ? ".mgBodyFixed" : ".mgBodyFixed2"] =  { bottom : this.scrollBarSize + "px" };
+				rules[(!Browser.ie7) ? ".mgBodyFixed" : ".mgBodyFixed2"] =  { bottom : this.scrollBarSize + "px" };
 			}
 			if (allowColumnResize) {
-				rules[".mgRS"] = { display : "block", position : "absolute" };
+				rules[".mgRS"] = { display : "block", position : "relative" };
 				rules[".mgResizeDragger"] = { bottom : this.scrollBarSize + "px" };
 			}
 		}
@@ -463,7 +463,7 @@ var MooGrid = new Class({
 			}
 		}
 		
-		if (Browser.Engine.trident) {
+		if (Browser.ie) {
 			sheet.styleSheet.cssText = cssText.join(" ");
 		} else {
 			sheet.set("text", cssText.join(" "));
@@ -486,10 +486,8 @@ var MooGrid = new Class({
 			"mouseup" : this.ResizeInfo.boundMouseUp
 		});
 		
-		if (Browser.Engine.presto925) { // Stop text selection in Opera 9.25
-			event.stop();
-			return false;
-		}
+		event.stop();
+		return false;
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -543,10 +541,8 @@ var MooGrid = new Class({
 			"mouseup" : this.ResizeInfo.boundMouseUp
 		});
 		
-		if (Browser.Engine.presto925) { // Stop text selection in Opera 9.25
-			event.stop();
-			return false;
-		}
+		event.stop();
+		return false;
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -706,16 +702,26 @@ var MooGrid = new Class({
 	//////////////////////////////////////////////////////////////////////////////////
 	clearTextSelections : function() {
 		if (!!window.getSelection) {
-			window.getSelection().removeAllRanges();
+			this.clearTextSelections = function() {
+				window.getSelection().removeAllRanges();
+				return false;
+			};
 		} else if (!!document.selection) {
-			document.selection.empty();
+			this.clearTextSelections = function() {
+				document.selection.empty();
+				return false;
+			};
+		} else {
+			this.clearTextSelections = function() {
+				return false;
+			};
 		}
 		
-		return false;
+		this.clearTextSelections();
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	cleanUp : function(fullCleanUp) {
+	cleanUp : function(fullCleanUp) { // Useful in IE to clear memory leaks
 		var elementId = this.element.id;
 		
 		this.base.removeEvents();
