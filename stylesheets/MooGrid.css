@@ -17,6 +17,7 @@
 	line-height : 100%;
 	white-space : nowrap;
 	overflow : hidden;
+	cursor : default;
 }
 .mgBaseResize {
 	position : absolute;
@@ -94,9 +95,6 @@
 	bottom : 0px;
 	left : 0px;
 	overflow : hidden;
-}
-.mgHeadStaticHidden .mgC, .mgFootStaticHidden .mgC {
-	visibility : hidden !important;
 }
 .mgCl {
 	display : inline-block;

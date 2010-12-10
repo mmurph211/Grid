@@ -55,14 +55,14 @@ var MooGrid = new Class({
 		this.headFixed = new Element("DIV", { "class" : "mgHeadFixed" }).inject(this.head);
 		this.headStatic = new Element("DIV", { "class" : "mgHeadStatic" }).inject(this.head);
 		
+		this.foot = new Element("DIV", { "class" : "mgFoot" }).inject(this.base);
+		this.footFixed = new Element("DIV", { "class" : "mgFootFixed" }).inject(this.foot);
+		this.footStatic = new Element("DIV", { "class" : "mgFootStatic" }).inject(this.foot);
+		
 		this.body = new Element("DIV", { "class" : "mgBody" }).inject(this.base);
 		this.bodyFixed = new Element("DIV", { "class" : "mgBodyFixed" }).inject(this.body);
 		this.bodyFixed2 = new Element("DIV", { "class" : "mgBodyFixed2" }).inject(this.bodyFixed);
 		this.bodyStatic = new Element("DIV", { "class" : "mgBodyStatic" }).inject(this.body);
-		
-		this.foot = new Element("DIV", { "class" : "mgFoot" }).inject(this.body, "before");
-		this.footFixed = new Element("DIV", { "class" : "mgFootFixed" }).inject(this.foot);
-		this.footStatic = new Element("DIV", { "class" : "mgFootStatic" }).inject(this.foot);
 		
 		if (this.options.fixedCols > 0 && !Browser.ie) { // Simulate some degree of scrolling over non-scrollable content
 			this.bodyFixed.addEvent("mousewheel", this.simulateMouseScroll);
@@ -73,6 +73,10 @@ var MooGrid = new Class({
 				"class" : "mgBaseResize", 
 				"events" : { "mousedown" : this.initResizeGrid }
 			}).inject(this.base);
+		}
+		
+		if (this.options.allowColumnResize) {
+			this.base.addEvent("mousedown:relay(span.mgRS)", this.initResizeColumn);
 		}
 		
 		if (this.options.allowSelections || this.options.allowMultipleSelections) {
@@ -131,8 +135,8 @@ var MooGrid = new Class({
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	convertData_Xml : function(Body) {
-		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null)), 
+	convertData_Xml : function(Data) {
+		var base = (!!Data.Head) ? Data.Head : ((!!Data.Body) ? Data.Body : ((!!Data.Foot) ? Data.Foot : null)), 
 		    cells = (!!base) ? base.getElementsByTagName("row")[0].getElementsByTagName("cell").length : 0, 
 		    col_length = cells, 
 		    cellText = (Browser.ie) ? "text" : "textContent", 
@@ -146,7 +150,6 @@ var MooGrid = new Class({
 			    cells, 
 			    col_index;
 			
-			rowClass = "<DIV class='" + rowClass;
 			while (row_index) {
 				fullDiv = rowClass + (--row_index) + "'>";
 				cells = rows[row_index].getElementsByTagName("cell");
@@ -161,7 +164,7 @@ var MooGrid = new Class({
 					col_index = col_length;
 					while (col_index) {
 						col_index--; // Not in next line due to Opera bug
-						arr[col_index][row_index] = "<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>" + arr[col_index][row_index];
+						arr[col_index][row_index] = ("<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>") + arr[col_index][row_index];
 					}
 				}
 			}
@@ -176,18 +179,18 @@ var MooGrid = new Class({
 			this.cellData.foot[cells] = [];
 		}
 		
-		if (!!Body.Head) {
-			_convert(this.cellData.head, Body.Head.getElementsByTagName("row"), "mgC mgHR mgR", true);
+		if (!!Data.Head) {
+			_convert(this.cellData.head, Data.Head.getElementsByTagName("row"), "<DIV class='mgC mgHR mgR", true);
 		} else {
 			this.Css.rules[".mgHead"] = { display : "none" };
 		}
-		if (!!Body.Body) {
-			_convert(this.cellData.body, Body.Body.getElementsByTagName("row"), "mgC mgBR mgR", false);
+		if (!!Data.Body) {
+			_convert(this.cellData.body, Data.Body.getElementsByTagName("row"), "<DIV class='mgC mgBR mgR", false);
 		} else {
 			this.Css.rules[".mgBodyFixed"] = { display : "none" };
 		}
-		if (!!Body.Foot) {
-			_convert(this.cellData.foot, Body.Foot.getElementsByTagName("row"), "mgC mgFR mgR", false);
+		if (!!Data.Foot) {
+			_convert(this.cellData.foot, Data.Foot.getElementsByTagName("row"), "<DIV class='mgC mgFR mgR", false);
 		} else {
 			this.Css.rules[".mgFoot"] = { display : "none" };
 		}
@@ -203,8 +206,8 @@ var MooGrid = new Class({
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	convertData_Json : function(Body) {
-		var base = (!!Body.Head) ? Body.Head : ((!!Body.Body) ? Body.Body : ((!!Body.Foot) ? Body.Foot : null)), 
+	convertData_Json : function(Data) {
+		var base = (!!Data.Head) ? Data.Head : ((!!Data.Body) ? Data.Body : ((!!Data.Foot) ? Data.Foot : null)), 
 		    cells = (!!base) ? base[0].length : 0, 
 		    col_length = cells, 
 		    allowColumnResize = this.options.allowColumnResize;
@@ -216,7 +219,6 @@ var MooGrid = new Class({
 			    tempRow, 
 			    col_index;
 			
-			rowClass = "<DIV class='" + rowClass;
 			while (row_index) {
 				fullDiv = rowClass + (--row_index) + "'>";
 				tempRow = rows[row_index];
@@ -230,7 +232,7 @@ var MooGrid = new Class({
 					col_index = col_length;
 					while (col_index) {
 						col_index--; // Not in next line due to Opera bug
-						arr[col_index][row_index] = "<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>" + arr[col_index][row_index];
+						arr[col_index][row_index] = ("<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>") + arr[col_index][row_index];
 					}
 				}
 			}
@@ -245,18 +247,18 @@ var MooGrid = new Class({
 			this.cellData.foot[cells] = [];
 		}
 		
-		if (!!Body.Head) {
-			_convert(this.cellData.head, Body.Head, "mgC mgHR mgR", true);
+		if (!!Data.Head) {
+			_convert(this.cellData.head, Data.Head, "<DIV class='mgC mgHR mgR", true);
 		} else {
 			this.Css.rules[".mgHead"] = { display : "none" };
 		}
-		if (!!Body.Body) {
-			_convert(this.cellData.body, Body.Body, "mgC mgBR mgR", false);
+		if (!!Data.Body) {
+			_convert(this.cellData.body, Data.Body, "<DIV class='mgC mgBR mgR", false);
 		} else {
 			this.Css.rules[".mgBodyFixed"] = { display : "none" };
 		}
-		if (!!Body.Foot) {
-			_convert(this.cellData.foot, Body.Foot, "mgC mgFR mgR", false);
+		if (!!Data.Foot) {
+			_convert(this.cellData.foot, Data.Foot, "<DIV class='mgC mgFR mgR", false);
 		} else {
 			this.Css.rules[".mgFoot"] = { display : "none" };
 		}
@@ -271,10 +273,9 @@ var MooGrid = new Class({
 		this.body.addEvent("scroll", this.syncScrolls);
 		
 		if (!!$(this.element.id + "SS")) {
-			this.Css.sheet = $(this.element.id + "SS");
-			this.setRules(); // Reset stylesheet to blank
+			this.Css.sheet = $(this.element.id + "SS").dispose();
 		} else {
-			this.Css.sheet = new Element("STYLE", { "id" : this.element.id + "SS", "type" : "text/css" }).inject(document.head);
+			this.Css.sheet = new Element("STYLE", { "id" : this.element.id + "SS", "type" : "text/css" });
 		}
 		
 		this.element.appendChild(this.docFrag);
@@ -291,52 +292,58 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	generateGrid : function() {
-		var fixedCols = this.options.fixedCols, 
-		    allowColResize = this.options.allowColumnResize, 
-		    emptyHtml = { "fullHTML" : "", "fixedHTML" : "" };
+		var hHTML, 
+		    bHTML, 
+		    fHTML, 
+		    replaceRegex = /@/, 
+		    fixedCols = this.options.fixedCols, 
+		    EmptyHtml = { "fullHTML" : "", "fixedHTML" : "" };
 		
 		var _generate = function(cols) {
-			var html = [], 
+			var fHtml = [], 
+			    sHtml = [], 
 			    col_index = cols.length;
 			
 			while (col_index) {
-				html[--col_index] = ["<DIV class='mgCl mgCl", col_index, ((col_index < fixedCols) ? " mgFCl'>" : "'>"), cols[col_index].join("</DIV>"), "</DIV></DIV>"].join("");
+				col_index--;
+				if (col_index < fixedCols) {
+					fHtml[col_index] = ("<DIV class='mgCl mgCl" + col_index + " mgFCl'>@</DIV></DIV>").replace(replaceRegex, cols[col_index].join("</DIV>"));
+					sHtml[col_index] = "<DIV class='mgCl mgCl" + col_index + " mgFCl'></DIV>";
+				} else {
+					sHtml[col_index] = ("<DIV class='mgCl mgCl" + col_index + "'>@</DIV></DIV>").replace(replaceRegex, cols[col_index].join("</DIV>"));
+				}
 			}
 			
-			return {
-				"fullHTML" : html.join(""), 
-				"fixedHTML" : html.slice(0, fixedCols).join("")
-			};
+			return { fixedHTML : fHtml.join(""),  fullHTML : sHtml.join("") };
 		};
 		
 		this.hasHead = (this.cellData.head.length > 0 && this.cellData.head[0].length > 0);
 		this.hasBody = (this.cellData.body.length > 0 && this.cellData.body[0].length > 0);
-		this.hasFixedBody = (this.options.fixedCols > 0);
 		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
+		this.hasFixedCols = (this.options.fixedCols > 0);
+		hHTML = (this.hasHead) ? _generate(this.cellData.head) : EmptyHtml;
+		bHTML = (this.hasBody) ? _generate(this.cellData.body) : EmptyHtml;
+		fHTML = (this.hasFoot) ? _generate(this.cellData.foot) : EmptyHtml;
 		
-		var hHTML = (this.hasHead) ? _generate(this.cellData.head) : emptyHtml, 
-		    bHTML = (this.hasBody) ? _generate(this.cellData.body) : emptyHtml, 
-		    fHTML = (this.hasFoot) ? _generate(this.cellData.foot) : emptyHtml;
-		
-		this.headStatic.set("html", hHTML.fullHTML);
-		this.bodyStatic.set("html", bHTML.fullHTML);
-		this.footStatic.set("html", fHTML.fullHTML);
-		if (!this.hasBody) {
-			this.bodyStatic.set("html", "<DIV class='mgEmptySetMsg'>No results returned.</DIV>");
+		if (this.hasHead) {
+			this.headStatic.innerHTML = hHTML.fullHTML;
+			if (this.hasFixedCols) {
+				this.headFixed.innerHTML = hHTML.fixedHTML;
+			}
 		}
-		
-		this.headFixed.set("html", hHTML.fixedHTML);
-		if (!this.hasHead) {
-			this.bodyFixed2.set("html", bHTML.fixedHTML);
+		if (this.hasBody) {
+			this.bodyStatic.innerHTML = bHTML.fullHTML;
+			if (this.hasFixedCols) {
+				this.bodyFixed2.innerHTML = bHTML.fixedHTML;
+			}
 		} else {
-			this.bodyFixed2.set("html", [hHTML.fixedHTML, "<br>", bHTML.fixedHTML].join(""));
-			this.headStatic.clone(true, true).addClass("mgHeadStaticHidden").inject(this.body, "top");
+			this.bodyStatic.innerHTML = "<DIV class='mgEmptySetMsg'>No results returned.</DIV>";
 		}
-		this.footStatic.clone(true, true).addClass("mgFootStaticHidden").inject(this.body);
-		this.footFixed.set("html", fHTML.fixedHTML);
-		
-		if (allowColResize) {
-			this.base.addEvent("mousedown:relay(span.mgRS)", this.initResizeColumn);
+		if (this.hasFoot) {
+			this.footStatic.innerHTML = fHTML.fullHTML;
+			if (this.hasFixedCols) {
+				this.footFixed.innerHTML = fHTML.fixedHTML;
+			}
 		}
 	}, 
 	
@@ -344,18 +351,18 @@ var MooGrid = new Class({
 	alignColumns : function(reAlign) {
 		if (this.columns === 0) return;
 		
-		var allowColumnResize = this.options.allowColumnResize, 
+		var fixedCols = this.options.fixedCols, 
+		    allowColumnResize = this.options.allowColumnResize, 
 		    colBGColors = this.options.colBGColors, 
 		    colBGColorsLength = colBGColors.length, 
-		    rules = this.Css.rules;
+		    rules = this.Css.rules, 
+		    headHeight, 
+		    footHeight;
 		
 		this.columnWidths = [];
 		this.colIndex = 0;
-		this.colNodes = {
-			head : this.headStatic.children, 
-			body : this.bodyStatic.children, 
-			foot : this.footStatic.children
-		};
+		this.colNodes = { head : this.headStatic.children, body : this.bodyStatic.children, foot : this.footStatic.children };
+		this.fixedColNodes = (fixedCols > 0) ? { head : this.headFixed.children, body : this.bodyFixed2.children, foot : this.footFixed.children } : null;
 		
 		if (reAlign === true) {
 			for (var i=0; i<this.columns; i++) {
@@ -363,18 +370,21 @@ var MooGrid = new Class({
 			}
 			this.setRules();
 		} else {
+			headHeight = (this.hasHead) ? this.head.offsetHeight : 0;
+			footHeight = (this.hasFoot) ? this.foot.offsetHeight : 0;
 			this.scrollBarSize = this.body.offsetWidth - this.body.clientWidth;
 			
 			rules[".mgC"] = { visibility : "visible" };
 			rules[".mgCl"] = { "background-color" : "#fff" };
+			rules[".mgBodyStatic"] = { padding : headHeight + "px 0px " + footHeight + "px 0px" };
 			if (this.hasHead) {
 				rules[".mgHead"] = { right : this.scrollBarSize + "px" };
 			}
 			if (this.hasFoot) {
 				rules[".mgFoot"] = { bottom : this.scrollBarSize + "px", right : this.scrollBarSize + "px" };
 			}
-			if (this.hasFixedBody) {
-				rules[(!Browser.ie7) ? ".mgBodyFixed" : ".mgBodyFixed2"] =  { bottom : this.scrollBarSize + "px" };
+			if (this.hasFixedCols) {
+				rules[(!Browser.ie7) ? ".mgBodyFixed" : ".mgBodyFixed2"] =  { top : headHeight + "px", bottom : this.scrollBarSize + "px" };
 			}
 			if (allowColumnResize) {
 				rules[".mgRS"] = { display : "block", position : "relative" };
@@ -383,7 +393,8 @@ var MooGrid = new Class({
 		}
 		
 		while (true) {
-			var targets = [this.colNodes.head[this.colIndex], this.colNodes.body[this.colIndex], this.colNodes.foot[this.colIndex]], 
+			var nodes = (this.colIndex < fixedCols) ? this.fixedColNodes : this.colNodes, 
+			    targets = [nodes.head[this.colIndex], nodes.body[this.colIndex], nodes.foot[this.colIndex]], 
 			    width = Math.max(
 			    	(!!targets[0]) ? targets[0].offsetWidth : 0, 
 			    	(!!targets[1]) ? targets[1].offsetWidth : 0, 
@@ -406,6 +417,7 @@ var MooGrid = new Class({
 		}
 		
 		this.colNodes = null;
+		this.fixedColNodes = null;
 		this.setRules();
 	}, 
 	
@@ -423,7 +435,7 @@ var MooGrid = new Class({
 				this.lastScrollLeft = sL;
 			}
 		}
-		if (this.hasFixedBody) {
+		if (this.hasFixedCols) {
 			var sT = this.body.scrollTop;
 			if (sT !== this.lastScrollTop) {
 				this.bodyFixed2.setStyle("margin-top", -1 * this.body.scrollTop);
@@ -461,6 +473,10 @@ var MooGrid = new Class({
 			if (j > 0) {
 				cssText[i++] = idRulePrefix + rule + "{" + ((j === 1) ? cssElText[0] : cssElText.join("")) + "}";
 			}
+		}
+		
+		if (!$(sheet.id + "SS")) {
+			sheet.inject(document.head);
 		}
 		
 		if (Browser.ie) {
@@ -648,7 +664,7 @@ var MooGrid = new Class({
 		    toRemove = [], 
 		    indexCounter = 0, 
 		    selectedIndexes = this.selectedIndexes, 
-		    maxIndex = (this.hasBody) ? this.bodyStatic.children[0].children.length - 1 : 0;
+		    maxIndex = (this.hasBody) ? this.bodyStatic.children[this.options.fixedCols].children.length - 1 : 0;
 		
 		if (toggle === "selectAll") {
 			for (var i=0; i<=maxIndex; i++) {
@@ -672,29 +688,39 @@ var MooGrid = new Class({
 		    selBgColor = this.options.selectedBgColor, 
 		    fixedSelBgColor = this.options.fixedSelectedBgColor, 
 		    staticChildren = this.bodyStatic.children, // Do not extend for performance reasons
-		    fixedChildren; // Do not extend for performance reasons
+		    fixedChildren = (fixedCols > 0) ? this.bodyFixed2.children : [], // Do not extend for performance reasons
+		    select_length = toSelect.length, 
+		    remove_length = toRemove.length, 
+		    select_index, 
+		    remove_index, 
+		    col_index, 
+		    rows;
 		
 		if (fixedCols > 0) {
-			fixedChildren = this.bodyFixed2.children;
-			for (var col_index=fixedCols + 1, column; column=fixedChildren[col_index]; col_index++) { // fixedCols + 1 due to hidden html
-				var children = column.children;
-				for (var remove_counter=0, len=toRemove.length; remove_counter<len; remove_counter++) {
-					children[toRemove[remove_counter]].style.backgroundColor = "";
+			col_index = fixedCols;
+			while (col_index) {
+				rows = fixedChildren[--col_index].children;
+				remove_index = remove_length;
+				select_index = select_length;
+				while (remove_index) {
+					rows[toRemove[--remove_index]].style.backgroundColor = "";
 				}
-				for (var select_counter=0, len=toSelect.length; select_counter<len; select_counter++) {
-					children[toSelect[select_counter]].style.backgroundColor = fixedSelBgColor;
+				while (select_index) {
+					rows[toSelect[--select_index]].style.backgroundColor = fixedSelBgColor;
 				}
 			}
 		}
 		
-		for (var col_index=0, column; column=staticChildren[col_index]; col_index++) {
-			var bgColor = (fixedCols > col_index) ? fixedSelBgColor : selBgColor, 
-			    children = column.children;
-			for (var remove_counter=0, len=toRemove.length; remove_counter<len; remove_counter++) {
-				children[toRemove[remove_counter]].style.backgroundColor = "";
+		col_index = this.columns;
+		while (col_index > fixedCols) {
+			rows = staticChildren[--col_index].children;
+			remove_index = remove_length;
+			select_index = select_length;
+			while (remove_index) {
+				rows[toRemove[--remove_index]].style.backgroundColor = "";
 			}
-			for (var select_counter=0, len=toSelect.length; select_counter<len; select_counter++) {
-				children[toSelect[select_counter]].style.backgroundColor = bgColor;
+			while (select_index) {
+				rows[toSelect[--select_index]].style.backgroundColor = selBgColor;
 			}
 		}
 	}, 
@@ -725,6 +751,7 @@ var MooGrid = new Class({
 		var elementId = this.element.id;
 		
 		this.base.removeEvents();
+		this.head.removeEvents();
 		this.body.removeEvents();
 		this.bodyFixed.removeEvents();
 		
