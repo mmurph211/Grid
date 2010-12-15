@@ -28,7 +28,7 @@
 // - Double click column header to auto fit content
 // - Relative column widths
 // - Graceful degradation
-// - Checkbox column and keyboard shortcut options for row selection
+// - Keyboard shortcut options for row selection
 // - Zebra row support in older browsers. In newer browsers try:
 //     .mgBR:nth-child(odd) { background-color : [color]; }
 // - More...
