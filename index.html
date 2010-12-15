@@ -7,14 +7,16 @@
 	<!-- <link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css"> -->
 	<style>
 		html,body{height:100%;margin:0px;padding:0px;overflow:hidden;}
+		body{background:-webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));background:-moz-linear-gradient(top,  #fff,  #eee);}
 		h1{display:block;margin:20px 20px 0px 20px;line-height:21px;font-size:21px;font-family:Verdana;color:#333;}
 		a{font-size:11px;font-family:Verdana;text-decoration:none;color:#0000ff;}
 		a:hover{text-decoration:underline;}
-		#github{display:inline-block;margin:0px 20px 0px 20px;}
-		#demoDiv{margin:20px;width:700px;height:290px;}
+		#demoDiv{margin:20px;width:700px;height:290px;-moz-box-shadow:2px 2px 2px #777;-webkit-box-shadow:2px 2px 2px #777;box-shadow:2px 2px 2px #777;}
 		#demoLinks{margin:0px 20px;}
 		#dev{display:none;margin:0px 20px 20px 20px;width:790px;height:120px;}
 		#srcXml{display:none;}
+		#mgCbh{margin:0px;padding:0px;width:1.0em;*width:auto;height:1.0em;*height:auto;}
+		.mgCb{position:absolute;z-index:1;display:block;margin:-1px 0px 0px -1px;*margin:-4px 0px 0px -2px;padding:0px;}
 		
 		.mgBase{position:relative;border-width:1px 0 0 1px;border-color:#9eb6ce;border-style:solid;width:100%;height:100%;padding:0;background-color:#fff;font-family:Verdana;font-size:.70em;line-height:100%;white-space:nowrap;overflow:hidden;cursor:default}
 		.mgBaseResize{position:absolute;z-index:5;bottom:0;right:0;width:16px;height:16px;background-color:transparent;background-position:0 -38px;background-repeat:no-repeat;cursor:nw-resize}
@@ -32,18 +34,24 @@
 		.mgHR{border-width:0 1px 1px 0;border-color:#aaa #ccc!important;background-color:#a0c8ee;background-position:0 0;background-repeat:repeat-x;color:#111!important}
 		.mgBR{border-width:0 1px 1px 0}
 		.mgFR{border-width:1px 1px 0 0;border-color:#aaa #ccc!important;background-color:#a0c8ee;background-position:0 -19px;background-repeat:repeat-x}
-		.mgFCl .mgBR{background-color:#cee6fc;border-color:#bbb #ccc!important}
+		.mgFCl .mgBR{border-color:#bbb #ccc!important}
 		.mgC{padding:4px 6px 4px 4px;border-color:#ddd #eee;border-style:solid;color:#333;vertical-align:top;visibility:hidden;cursor:default}
 		.mgBaseResize,.mgHR,.mgFR{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA0CAMAAAC0EEhzAAAAS1BMVEWFhYX///+FhYWhye6jyu+ly++lzPCnzfCqz/Grz/Gs0PKv0vOy1PS11vW42PW72va+3PfB3vjE3/nG4frH4fnI4vrK5PvM5fzO5vyrwE43AAAAAnRSTlMAAHaTzTgAAACRSURBVBjTfc9bDoJAEAXRAhVfvHGA/a9UhIBjTeL5ILmX7tAwC5MwCiG8QoxB6IVOaIVGqIVKKIWn8BBuwlUovi6fB2fhJGmRrBSSfjY5LLr6vp6e/FwpVEItNEIrdEIvDEIQRmESZiGTvwVZriLnt8iJC5b3xCtrjifWfBTbfLSy52Niz1txzO8rUd4morykN2s7IaFNf/WDAAAAAElFTkSuQmCC);*background-image:url("stylesheets/MooGrid.png")}
 	</style>
 </head>
 <body>
 	<h1>MooGrid demo</h1>
-	<a id="github" href="http://github.com/mmurph211/Grid" title="GitHub">GitHub project page</a>
-	<div id="demoDiv"></div>
 	<div id="demoLinks">
-		<a href="javascripts/MooGrid.js" title="View Script">View Script Source</a> | <a href="stylesheets/MooGrid.css" title="View CSS">View CSS Source</a>
+		<a href="http://www.matts411.com/post/moogrid/" title="Blog project page">Blog project page</a>
+		 | 
+		<a href="http://github.com/mmurph211/Grid" title="GitHub">GitHub project page</a>
+		 | 
+		<a href="https://github.com/mmurph211/Grid/blob/master/javascripts/MooGrid.js" title="View Script">View Script Source</a>
+		 | 
+		<a href="https://github.com/mmurph211/Grid/blob/master/stylesheets/MooGrid.css" title="View CSS">View CSS Source</a>
 	</div>
+	
+	<div id="demoDiv"></div>
 	<textarea id="dev"></textarea><br>
 	<textarea id="srcXml"></textarea>
 	
@@ -54,1371 +62,203 @@
 	-->
 	<script type="text/javascript" src="javascripts/demo_compressed.js"></script>
 	<script type="text/javascript">
-		window.addEvent("domready", function(event) {
-			var myGrid = new MooGrid("demoDiv", {
-				allowGridResize : true, 
-				allowColumnResize : true, 
-				allowSelections : true, 
-				allowMultipleSelections : true, 
-				fixedCols : 1, 
-				srcType : "json_local", 
-				// xml_remote : "data_v2.xml", 
-				// xml_local : $("srcXml").value, 
-				// json_remote : "data_json_v2.txt", 
-				json_local : jsonData
-			});
+		var Demo = new Class({
+			Binds : ["generateMooGrid", "syncRowSelections", "stopCheckboxStateChange"], 
+			
+			grid : null, 
+			
+			//////////////////////////////////////////////////////////////////////////////////
+			initialize : function() {
+				window.addEvent("domready", this.generateMooGrid);
+			}, 
+			
+			//////////////////////////////////////////////////////////////////////////////////
+			generateMooGrid : function(event) {
+				this.grid = new MooGrid("demoDiv", {
+					allowGridResize : true, 
+					allowColumnResize : true, 
+					allowSelections : true, 
+					allowMultipleSelections : true, 
+					fixedCols : 2, 
+					colBGColors : ["#cee6fc", "#cee6fc"], 
+					srcType : "json_local", 
+					json_local : this.getJSONData()
+					// xml_remote : "data_v2.xml" // Example
+					// xml_local : $("srcXml").value // Example
+					// json_remote : "data_json_v2.txt" // Example
+				});
+				
+				this.grid.body.addEvents({
+					"rowSelect" : this.syncRowSelections, 
+					"click:relay(input)" : this.stopCheckboxStateChange
+				});
+				
+				this.checkboxes = Array.from(this.grid.bodyFixed2.getElementsByTagName("INPUT"));
+			}, 
+			
+			//////////////////////////////////////////////////////////////////////////////////
+			syncRowSelections : function(toSelect, toRemove, target, rowIndex) {
+				var cbs = this.checkboxes, 
+				    i;
+				
+				i = toRemove.length;
+				while (i) {
+					cbs[toRemove[--i]].checked = false;
+				}
+				i = toSelect.length;
+				while (i) {
+					cbs[toSelect[--i]].checked = true;
+				}
+			}, 
+			
+			//////////////////////////////////////////////////////////////////////////////////
+			stopCheckboxStateChange : function(event, clicked) {
+				var parentCell = clicked.getParent(".mgBR"), 
+				    rowIndex = /mgR(\d+)/.exec(parentCell.get("class"))[1].toInt(), 
+				    rowIndexSelected = this.grid.selectedIndexes.contains(rowIndex);
+				
+				clicked.checked = rowIndexSelected;
+			}, 
+			
+			//////////////////////////////////////////////////////////////////////////////////
+			getJSONData : function() {
+				var cbHtml = "<input type=checkbox class=mgCb>&nbsp;", 
+				    cbHeader = "<p id=mgCbh>" + ((Browser.ie7) ? "&nbsp;&nbsp;&nbsp;" : "");
+				
+				return { // Example
+					Head : [
+						[cbHeader, "Account", "First Name", "Last Name", "Age", "State", "Email Address", "Favorite Color", "Favorite Season", "Extra Column"]
+					], 
+					Body : [
+						[cbHtml, "account0001", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0002", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0003", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "", "Spring", "Extra"], 
+						[cbHtml, "account0004", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0005", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0006", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0007", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0008", "Bat", "Man", "", "New York", "batman@gocellam.net", "Black", "", "Extra"], 
+						[cbHtml, "account0009", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0010", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0011", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0012", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0013", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0014", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0015", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0016", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0017", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0018", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0019", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0020", "Bat", "Man", "", "New York", "batman@gocellam.net", "Black", "", "Extra"], 
+						[cbHtml, "account0021", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0022", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0023", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0024", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0025", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0026", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0027", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0028", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0029", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0030", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0031", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0032", "Bat", "Man", "", "New York", "batman@gocellam.net", "Black", "", "Extra"], 
+						[cbHtml, "account0033", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0034", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0035", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0036", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0037", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0038", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0039", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0040", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0041", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0042", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0043", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0044", "Bat", "Man", "", "New York", "batman@gocellam.net", "Black", "", "Extra"], 
+						[cbHtml, "account0045", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0046", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0047", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0048", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0049", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0050", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0051", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0052", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0053", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0054", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0055", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0056", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
+						[cbHtml, "account0057", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0058", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0059", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0060", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0061", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0062", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0063", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0064", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0065", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0066", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0067", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0068", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
+						[cbHtml, "account0069", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0070", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0071", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0072", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0073", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0074", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0075", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0076", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0077", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0078", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0079", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0080", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
+						[cbHtml, "account0081", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0082", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0083", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0084", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0085", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0086", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0087", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0088", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0089", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0090", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0091", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0092", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
+						[cbHtml, "account0093", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0094", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0095", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0096", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0097", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0098", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0099", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0100", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0101", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0102", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0103", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0104", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
+						[cbHtml, "account0105", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0106", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0107", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0108", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
+						[cbHtml, "account0109", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
+						[cbHtml, "account0110", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
+						[cbHtml, "account0111", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
+						[cbHtml, "account0112", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
+						[cbHtml, "account0113", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
+						[cbHtml, "account0114", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
+						[cbHtml, "account0115", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
+						[cbHtml, "account0116", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
+						[cbHtml, "account0117", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
+						[cbHtml, "account0118", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
+						[cbHtml, "account0119", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
+						[cbHtml, "account0120", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"]
+					],
+					Foot : [
+						["", "Average:", "Jim", "Bo", "36", "Delaware", "superman@gmail.com", "Green", "Spring", "Extra"]
+					]
+				};
+			}
 		});
 		
-		var jsonData = {
-			Head : [
-				[
-					"Account", 
-					"First Name", 
-					"Last Name", 
-					"Age", 
-					"State", 
-					"Email Address", 
-					"Favorite Color", 
-					"Favorite Season", 
-					"Extra Column"
-				]
-			], 
-			Body : [
-				[
-					"account0001", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0002", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0003", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0004", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0005", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0006", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0007", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0008", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gocellam.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0009", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0010", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0011", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0012", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0013", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0014", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0015", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0016", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0017", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0018", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0019", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0020", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gocellam.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0021", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0022", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0023", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0024", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0025", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0026", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0027", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0028", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0029", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0030", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0031", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0032", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gocellam.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0033", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0034", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0035", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0036", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0037", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0038", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0039", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0040", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0041", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0042", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0043", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0044", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gocellam.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0045", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0046", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0047", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0048", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0049", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0050", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0051", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0052", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0053", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0054", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0055", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0056", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gotham.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0057", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0058", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0059", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0060", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0061", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0062", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0063", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0064", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0065", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0066", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0067", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0068", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gotham.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0069", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0070", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0071", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0072", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0073", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0074", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0075", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0076", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0077", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0078", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0079", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0080", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gotham.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0081", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0082", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0083", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0084", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0085", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0086", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0087", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0088", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0089", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0090", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0091", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0092", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gotham.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0093", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0094", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0095", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0096", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0097", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0098", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0099", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0100", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0101", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0102", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0103", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0104", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gotham.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0105", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0106", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0107", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0108", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0109", 
-					"Jim", 
-					"Bo", 
-					"25", 
-					"Delaware", 
-					"Jim.Bo@gmail.com", 
-					"Blue", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0110", 
-					"Alley", 
-					"Bo", 
-					"28", 
-					"Delaware", 
-					"Alley.Bo@gmail.com", 
-					"Red", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0111", 
-					"Pablo", 
-					"Picasso", 
-					"65", 
-					"N/A", 
-					"pablo.picasso@universe.com", 
-					"All", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0112", 
-					"Jen", 
-					"Dotsen", 
-					"36", 
-					"Maryland", 
-					"jdotsen@yahoo.com", 
-					"Pink", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0113", 
-					"Bill", 
-					"Tucker", 
-					"12", 
-					"Wyoming", 
-					"superman@gmail.com", 
-					"Green", 
-					"Fall", 
-					"Extra"
-				], 
-				[
-					"account0114", 
-					"Mary", 
-					"Swanson", 
-					"35", 
-					"Colorado", 
-					"mary.swanson@samsonite.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0115", 
-					"Chris", 
-					"Tucker", 
-					"38", 
-					"California", 
-					"ctucker@rushhour.com", 
-					"Orange", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0116", 
-					"Bat", 
-					"Man", 
-					"", 
-					"New York", 
-					"batman@gotham.net", 
-					"Black", 
-					"", 
-					"Extra"
-				], 
-				[
-					"account0117", 
-					"Jimmy", 
-					"Johnson", 
-					"31", 
-					"Nascar", 
-					"jj@nascar.us", 
-					"White", 
-					"Summer", 
-					"Extra"
-				], 
-				[
-					"account0118", 
-					"Britney", 
-					"Spears", 
-					"11", 
-					"Tennessee", 
-					"bspears@asylum.com", 
-					"Red", 
-					"Spring", 
-					"Extra"
-				], 
-				[
-					"account0119", 
-					"M", 
-					"Jordan", 
-					"23", 
-					"Illinois", 
-					"mjordan@dabulls.com", 
-					"Red", 
-					"Winter", 
-					"Extra"
-				], 
-				[
-					"account0120", 
-					"50", 
-					"Cent", 
-					"34", 
-					"New York", 
-					"fiddy@cent.com", 
-					"Platinum", 
-					"Fall", 
-					"Extra"
-				]
-			],
-			Foot : [
-				[
-					"Average:", 
-					"Jim", 
-					"Bo", 
-					"36", 
-					"Delaware", 
-					"superman@gmail.com", 
-					"Green", 
-					"Spring", 
-					"Extra"
-				]
-			]
-		};
+		new Demo();
 	</script>
 </body>
 </html>

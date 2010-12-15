@@ -25,7 +25,7 @@ var MooGrid = new Class({
 		json_remote : "", 
 		json_local : {}, 
 		selectedBgColor : "#fef7dc", 
-		fixedSelectedBgColor : "#fef7dc", 
+		fixedSelectedBgColor : "#f4eccd", 
 		colBGColors : []
 	}, 
 	
