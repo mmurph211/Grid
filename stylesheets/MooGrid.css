@@ -111,7 +111,7 @@
 	color : #111 !important;
 }
 .mgBR {
-	border-width : 0px 1px 1px 0px;
+	border-width : 0px 0px 1px 0px;
 }
 .mgFR {
 	border-width : 1px 1px 0px 0px;
@@ -121,10 +121,10 @@
 	background-repeat: repeat-x;
 }
 .mgFCl .mgBR {
-	border-color : #bbb #ccc !important;
+	border-color : #ccc !important;
 }
 .mgC {
-	padding : 4px 6px 4px 4px;
+	padding : 4px 8px 4px 4px;
 	border-color : #ddd #eee;
 	border-style : solid;
 	color : #333;
