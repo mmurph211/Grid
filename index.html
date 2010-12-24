@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<title>Grid</title>
+	<title>MooGrid Demo</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=8">
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 	<!-- <link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css"> -->
@@ -40,7 +40,7 @@
 	</style>
 </head>
 <body>
-	<h1>MooGrid demo</h1>
+	<h1>MooGrid Demo</h1>
 	<div id="demoLinks">
 		<a href="http://www.matts411.com/post/moogrid/" title="Blog project page">Blog project page</a>
 		 | 
@@ -88,12 +88,8 @@
 					// json_remote : "data_json_v2.txt" // Example
 				});
 				
-				this.grid.body.addEvents({
-					"rowSelect" : this.syncRowSelections, 
-					"click:relay(input)" : this.stopCheckboxStateChange
-				});
-				
-				this.checkboxes = Array.from(this.grid.bodyFixed2.getElementsByTagName("INPUT"));
+				this.checkboxes = [];
+				this.grid.body.addEvent("rowSelect", this.syncRowSelections);
 			}, 
 			
 			//////////////////////////////////////////////////////////////////////////////////
@@ -101,6 +97,20 @@
 				var cbs = this.checkboxes, 
 				    i;
 				
+				// Set checkbox array if not yet set:
+				if (cbs.length === 0 && !!this.grid) {
+					this.checkboxes = cbs = Array.from(this.grid.bodyFixed2.getElementsByTagName("INPUT"));
+				}
+				
+				// Prevent checkbox state change if clicked:
+				if (!!target && target.className === "mgCb") {
+					target = $(target);
+					if (target.retrieve("eventsSet") !== "true") {
+						target.addEvent("click", this.stopCheckboxStateChange).store("eventsSet", "true");
+					}
+				}
+				
+				// Update checkbox states:
 				i = toRemove.length;
 				while (i) {
 					cbs[toRemove[--i]].checked = false;
@@ -112,12 +122,13 @@
 			}, 
 			
 			//////////////////////////////////////////////////////////////////////////////////
-			stopCheckboxStateChange : function(event, clicked) {
-				var parentCell = clicked.getParent(".mgBR"), 
+			stopCheckboxStateChange : function(event) {
+				var cb = $(event.target), 
+				    parentCell = cb.getParent(".mgBR"), 
 				    rowIndex = /mgR(\d+)/.exec(parentCell.get("class"))[1].toInt(), 
 				    rowIndexSelected = this.grid.selectedIndexes.contains(rowIndex);
 				
-				clicked.checked = rowIndexSelected;
+				cb.checked = rowIndexSelected;
 			}, 
 			
 			//////////////////////////////////////////////////////////////////////////////////
