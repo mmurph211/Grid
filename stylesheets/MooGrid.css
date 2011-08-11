@@ -1,7 +1,8 @@
+
 /*
  MooGrid
  
- MIT-style license. Copyright 2010 Matt V. Murphy
+ MIT-style license. Copyright 2011 Matt V. Murphy
 */
 .mgBase {
 	position : relative;
@@ -105,6 +106,7 @@
 .mgHR {
 	border-width : 0px 1px 1px 0px;
 	border-color : #aaa #ccc !important;
+	zoom : 1;
 	background-color : #a0c8ee;
 	background-position : 0px 0px;
 	background-repeat: repeat-x;
