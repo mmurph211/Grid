@@ -2,18 +2,19 @@
 //
 // MooGrid
 //
-// MIT-style license. Copyright 2010 Matt V. Murphy
+// MIT-style license. Copyright 2011 Matt V. Murphy
 //
 ////////////////////////////////////
 var MooGrid = new Class({
 	Implements : Options, 
 	Binds : ["parseData_Xml", "parseData_Json", "alignColumns", "syncScrolls", "simulateMouseScroll", "initResizeGrid", "initResizeColumn", 
-		"selectRange", "clearTextSelections"], 
+		"sortColumn", "selectRange", "clearTextSelections"], 
 	
 	options : {
 		noCache : true, 
 		allowGridResize : false, 
 		allowColumnResize : false, 
+		allowClientSideSorting : false, 
 		allowSelections : false, 
 		allowMultipleSelections : false, 
 		supportMultipleGridsInView : false, 
@@ -26,7 +27,9 @@ var MooGrid = new Class({
 		json_local : {}, 
 		selectedBgColor : "#fef7dc", 
 		fixedSelectedBgColor : "#f4eccd", 
-		colBGColors : []
+		colBGColors : [], 
+		colSortTypes : [], // "string", "number", "date", "custom", "none"
+		customSortCleaner : null
 	}, 
 	
 	Css : {
@@ -35,7 +38,12 @@ var MooGrid = new Class({
 		rules : {}
 	}, 
 	
+	columns : 0, 
+	lastSortedColumn : -1, 
+	rawData : [], 
 	selectedIndexes : [], 
+	cellData : { head : [], body : [], foot : [] }, 
+	cache : {}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	initialize : function(element, options) {
@@ -76,22 +84,23 @@ var MooGrid = new Class({
 		}
 		
 		if (this.options.allowColumnResize) {
-			this.base.addEvent("mousedown:relay(span.mgRS)", this.initResizeColumn);
+			this.head.addEvent("mousedown:relay(.mgRS)", this.initResizeColumn);
+		}
+		
+		if (this.options.allowClientSideSorting) {
+			this.head.addEvent("mousedown:relay(.mgHR)", this.sortColumn);
 		}
 		
 		if (this.options.allowSelections || this.options.allowMultipleSelections) {
 			this.options.allowSelections = true;
-			this.body.addEvent("mousedown:relay(div.mgBR)", this.selectRange);
+			this.body.addEvent("mousedown:relay(.mgBR)", this.selectRange);
 		}
-		
-		this.columns = 0;
-		this.cellData = { head : [], body : [], foot : [] };
 		
 		switch (this.options.srcType) {
 			case "xml_remote":
 				new Request({
-					method : "get", url : this.options.xml_remote, noCache : this.options.noCache
-				}).addEvent("onComplete", this.parseData_Xml).send();
+					url : this.options.xml_remote, onComplete : this.parseData_Xml, noCache : this.options.noCache
+				}).get();
 				break;
 			case "xml_local":
 				var xml = null;
@@ -106,12 +115,11 @@ var MooGrid = new Class({
 				break;
 			case "json_remote":
 				new Request.JSON({
-					method : "get", url : this.options.json_remote, noCache : this.options.noCache, secure : false
-				}).addEvent("onComplete", this.parseData_Json).send();
+					url : this.options.json_remote, onComplete : this.parseData_Json, noCache : this.options.noCache, secure : false
+				}).get();
 				break;
 			case "json_local":
-				this.convertData_Json(this.options.json_local);
-				this.parseData();
+				this.parseData_Json(this.options.json_local, "");
 				break;
 			default:
 				this.parseData();
@@ -136,69 +144,82 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	convertData_Xml : function(Data) {
-		var base = (!!Data.Head) ? Data.Head : ((!!Data.Body) ? Data.Body : ((!!Data.Foot) ? Data.Foot : null)), 
-		    cells = (!!base) ? base.getElementsByTagName("row")[0].getElementsByTagName("cell").length : 0, 
-		    col_length = cells, 
-		    cellText = (Browser.ie) ? "text" : "textContent", 
-		    allowColumnResize = this.options.allowColumnResize;
+		var base = Data.Head || Data.Body || Data.Foot || null, 
+		    allowColumnResize = this.options.allowColumnResize, 
+		    rows, 
+		    cols;
 		
-		var _convert = function(arr, rows, rowClass, isHeader) {
-			var row_index = rows.length, 
-			    allowColResize = isHeader && allowColumnResize, 
-			    fullDiv, 
-			    cell, 
-			    cells, 
-			    col_index;
-			
-			while (row_index) {
-				fullDiv = rowClass + (--row_index) + "'>";
-				cells = rows[row_index].getElementsByTagName("cell");
-				col_index = col_length;
-				
-				while (col_index) {
-					cell = cells[--col_index];
-					arr[col_index][row_index] = fullDiv + (cell[cellText] || "&nbsp;");
-				}
-				
-				if (allowColResize) {
-					col_index = col_length;
-					while (col_index) {
-						col_index--; // Not in next line due to Opera bug
-						arr[col_index][row_index] = ("<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>") + arr[col_index][row_index];
-					}
-				}
-			}
-		};
-		
-		if (!base) return;
-		
-		this.columns = cells;
-		while (cells) {
-			this.cellData.head[--cells] = [];
-			this.cellData.body[cells] = [];
-			this.cellData.foot[cells] = [];
+		if (!base) {
+			return;
 		}
 		
+		this.columns = cols = base.getElementsByTagName("row")[0].getElementsByTagName("cell").length;
+		while (cols) {
+			this.cellData.head[--cols] = [];
+			this.cellData.body[cols] = [];
+			this.cellData.foot[cols] = [];
+		}
+		cols = this.columns;
+		
 		if (!!Data.Head) {
-			_convert(this.cellData.head, Data.Head.getElementsByTagName("row"), "<DIV class='mgC mgHR mgR", true);
+			rows = Data.Head.getElementsByTagName("row");
+			this.convertDataItem_Xml(this.cellData.head, rows, "<DIV class='mgC mgHR mgR", this.columns, allowColumnResize, false);
 		} else {
 			this.Css.rules[".mgHead"] = { display : "none" };
 		}
 		if (!!Data.Body) {
-			_convert(this.cellData.body, Data.Body.getElementsByTagName("row"), "<DIV class='mgC mgBR mgR", false);
+			rows = Data.Body.getElementsByTagName("row");
+			this.convertDataItem_Xml(this.cellData.body, rows, "<DIV class='mgC mgBR mgR", this.columns, false, true);
 		} else {
 			this.Css.rules[".mgBodyFixed"] = { display : "none" };
 		}
 		if (!!Data.Foot) {
-			_convert(this.cellData.foot, Data.Foot.getElementsByTagName("row"), "<DIV class='mgC mgFR mgR", false);
+			rows = Data.Foot.getElementsByTagName("row");
+			this.convertDataItem_Xml(this.cellData.foot, rows, "<DIV class='mgC mgFR mgR", this.columns, false, false);
 		} else {
 			this.Css.rules[".mgFoot"] = { display : "none" };
 		}
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
+	convertDataItem_Xml : function(arr, rows, rowClass, columns, allowColResize, updateRawData) {
+		var cellText = (Browser.Engine.trident) ? "text" : "textContent", 
+		    row_index = rows.length, 
+		    fullDiv, 
+		    cellValue, 
+		    cells, 
+		    rawDataRow, 
+		    col_index;
+		
+		while (row_index) {
+			fullDiv = rowClass + (--row_index) + "'>";
+			cells = rows[row_index].getElementsByTagName("cell");
+			col_index = columns;
+			
+			if (updateRawData) {
+				this.rawData[row_index] = rawDataRow = [];
+			}
+			while (col_index) {
+				cellValue = cells[--col_index][cellText];
+				arr[col_index][row_index] = fullDiv + (cellValue || "&nbsp;");
+				if (updateRawData) {
+					rawDataRow[col_index] = cellValue;
+				}
+			}
+			
+			if (allowColResize) {
+				col_index = columns;
+				while (col_index) {
+					arr[--col_index][row_index] = ("<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>") + arr[col_index][row_index];
+				}
+			}
+		}
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
 	parseData_Json : function(responseJSON, responseText) {
 		if (typeOf(responseJSON) === "object") {
+			this.rawData = responseJSON.Body || [];
 			this.convertData_Json(responseJSON);
 		}
 		
@@ -207,60 +228,61 @@ var MooGrid = new Class({
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	convertData_Json : function(Data) {
-		var base = (!!Data.Head) ? Data.Head : ((!!Data.Body) ? Data.Body : ((!!Data.Foot) ? Data.Foot : null)), 
-		    cells = (!!base) ? base[0].length : 0, 
-		    col_length = cells, 
-		    allowColumnResize = this.options.allowColumnResize;
+		var base = Data.Head || Data.Body || Data.Foot || null, 
+		    allowColumnResize = this.options.allowColumnResize, 
+		    cols;
 		
-		var _convert = function(arr, rows, rowClass, isHeader) {
-			var row_index = rows.length, 
-			    allowColResize = isHeader && allowColumnResize, 
-			    fullDiv, 
-			    tempRow, 
-			    col_index;
-			
-			while (row_index) {
-				fullDiv = rowClass + (--row_index) + "'>";
-				tempRow = rows[row_index];
-				col_index = col_length;
-				
-				while (col_index) {
-					arr[--col_index][row_index] = fullDiv + (tempRow[col_index] || "&nbsp;");
-				}
-				
-				if (allowColResize) {
-					col_index = col_length;
-					while (col_index) {
-						col_index--; // Not in next line due to Opera bug
-						arr[col_index][row_index] = ("<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>") + arr[col_index][row_index];
-					}
-				}
-			}
-		};
-		
-		if (!base) return;
-		
-		this.columns = cells;
-		while (cells) {
-			this.cellData.head[--cells] = [];
-			this.cellData.body[cells] = [];
-			this.cellData.foot[cells] = [];
+		if (!base) {
+			return;
 		}
 		
+		this.columns = cols = base[0].length;
+		while (cols) {
+			this.cellData.head[--cols] = [];
+			this.cellData.body[cols] = [];
+			this.cellData.foot[cols] = [];
+		}
+		cols = this.columns;
+		
 		if (!!Data.Head) {
-			_convert(this.cellData.head, Data.Head, "<DIV class='mgC mgHR mgR", true);
+			this.convertDataItem_Json(this.cellData.head, Data.Head, "<DIV class='mgC mgHR mgR", this.columns, allowColumnResize);
 		} else {
 			this.Css.rules[".mgHead"] = { display : "none" };
 		}
 		if (!!Data.Body) {
-			_convert(this.cellData.body, Data.Body, "<DIV class='mgC mgBR mgR", false);
+			this.convertDataItem_Json(this.cellData.body, Data.Body, "<DIV class='mgC mgBR mgR", this.columns, false);
 		} else {
 			this.Css.rules[".mgBodyFixed"] = { display : "none" };
 		}
 		if (!!Data.Foot) {
-			_convert(this.cellData.foot, Data.Foot, "<DIV class='mgC mgFR mgR", false);
+			this.convertDataItem_Json(this.cellData.foot, Data.Foot, "<DIV class='mgC mgFR mgR", this.columns, false);
 		} else {
 			this.Css.rules[".mgFoot"] = { display : "none" };
+		}
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	convertDataItem_Json : function(arr, rows, rowClass, columns, allowColResize) {
+		var row_index = rows.length, 
+		    fullDiv, 
+		    tempRow, 
+		    col_index;
+		
+		while (row_index) {
+			fullDiv = rowClass + (--row_index) + "'>";
+			tempRow = rows[row_index];
+			col_index = columns;
+			
+			while (col_index) {
+				arr[--col_index][row_index] = fullDiv + (tempRow[col_index] || "&nbsp;");
+			}
+			
+			if (allowColResize) {
+				col_index = columns;
+				while (col_index) {
+					arr[--col_index][row_index] = ("<SPAN class='mgRS mgRS" + col_index + "'>&nbsp;</SPAN>") + arr[col_index][row_index];
+				}
+			}
 		}
 	}, 
 	
@@ -286,52 +308,41 @@ var MooGrid = new Class({
 		if (!Browser.ie7 && !Browser.ie8) {
 			this.alignColumns(false);
 		} else {
-			setTimeout(this.alignColumns.pass(false), 25);
+			window.setTimeout(this.alignColumns.pass(false), 25);
 		}
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	generateGrid : function() {
-		var hHTML, 
-		    bHTML, 
-		    fHTML, 
-		    replaceRegex = /@/, 
-		    fixedCols = this.options.fixedCols, 
-		    EmptyHtml = { "fullHTML" : "", "fixedHTML" : "" };
-		
-		var _generate = function(cols) {
-			var fHtml = [], 
-			    sHtml = [], 
-			    col_index = cols.length;
-			
-			while (col_index) {
-				col_index--;
-				if (col_index < fixedCols) {
-					fHtml[col_index] = ("<DIV class='mgCl mgCl" + col_index + " mgFCl'>@</DIV></DIV>").replace(replaceRegex, cols[col_index].join("</DIV>"));
-					sHtml[col_index] = "<DIV class='mgCl mgCl" + col_index + " mgFCl'></DIV>";
-				} else {
-					sHtml[col_index] = ("<DIV class='mgCl mgCl" + col_index + "'>@</DIV></DIV>").replace(replaceRegex, cols[col_index].join("</DIV>"));
-				}
-			}
-			
-			return { fixedHTML : fHtml.join(""),  fullHTML : sHtml.join("") };
-		};
-		
 		this.hasHead = (this.cellData.head.length > 0 && this.cellData.head[0].length > 0);
 		this.hasBody = (this.cellData.body.length > 0 && this.cellData.body[0].length > 0);
 		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
 		this.hasFixedCols = (this.options.fixedCols > 0);
-		hHTML = (this.hasHead) ? _generate(this.cellData.head) : EmptyHtml;
-		bHTML = (this.hasBody) ? _generate(this.cellData.body) : EmptyHtml;
-		fHTML = (this.hasFoot) ? _generate(this.cellData.foot) : EmptyHtml;
+		
+		this.generateGridHead();
+		this.generateGridBody();
+		this.generateGridFoot();
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	generateGridHead : function() {
+		var hHTML;
 		
 		if (this.hasHead) {
+			hHTML = this.generateGridItem(this.cellData.head);
 			this.headStatic.innerHTML = hHTML.fullHTML;
 			if (this.hasFixedCols) {
 				this.headFixed.innerHTML = hHTML.fixedHTML;
 			}
 		}
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	generateGridBody : function() {
+		var bHTML;
+		
 		if (this.hasBody) {
+			bHTML = this.generateGridItem(this.cellData.body);
 			this.bodyStatic.innerHTML = bHTML.fullHTML;
 			if (this.hasFixedCols) {
 				this.bodyFixed2.innerHTML = bHTML.fixedHTML;
@@ -339,12 +350,40 @@ var MooGrid = new Class({
 		} else {
 			this.bodyStatic.innerHTML = "<DIV class='mgEmptySetMsg'>No results returned.</DIV>";
 		}
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	generateGridFoot : function() {
+		var fHTML;
+		
 		if (this.hasFoot) {
+			fHTML = this.generateGridItem(this.cellData.foot);
 			this.footStatic.innerHTML = fHTML.fullHTML;
 			if (this.hasFixedCols) {
 				this.footFixed.innerHTML = fHTML.fixedHTML;
 			}
 		}
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	generateGridItem : function(cols) {
+		var fixedCols = this.options.fixedCols, 
+		    col_index = cols.length, 
+		    replaceRgx = /@/, 
+		    fHtml = [], 
+		    sHtml = [];
+		
+		while (col_index) {
+			col_index--;
+			if (col_index < fixedCols) {
+				fHtml[col_index] = ("<DIV class='mgCl mgCl" + col_index + " mgFCl'>@</DIV></DIV>").replace(replaceRgx, cols[col_index].join("</DIV>"));
+				sHtml[col_index] = "<DIV class='mgCl mgCl" + col_index + " mgFCl'></DIV>";
+			} else {
+				sHtml[col_index] = ("<DIV class='mgCl mgCl" + col_index + "'>@</DIV></DIV>").replace(replaceRgx, cols[col_index].join("</DIV>"));
+			}
+		}
+		
+		return { fixedHTML : fHtml.join(""),  fullHTML : sHtml.join("") };
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -593,6 +632,90 @@ var MooGrid = new Class({
 	}, 
 	
 	//////////////////////////////////////////////////////////////////////////////////
+	sortColumn : function(event, clicked) {
+		var cI = /mgCl(\d+)/.exec(clicked.getParent(".mgCl").get("class"))[1].toInt(), 
+		    cSortType = this.options.colSortTypes[cI] || "string", 
+		    cSortType = (cI === this.lastSortedColumn) ? "reverse" : cSortType, 
+		    Store = { hasSelections : (this.options.allowSelections && this.selectedIndexes.length > 0) }, 
+		    rawData = this.rawData, 
+		    that = this;
+		
+		// Return if no body rows or if not a sort column:
+		if (!this.hasBody || cSortType === "none") {
+			return;
+		}
+		
+		// Store prior index order and selections:
+		Store.index = rawData.length;
+		Store.storeAt = rawData[0].length;
+		while (Store.index) {
+			rawData[--Store.index][Store.storeAt] = Store.index;
+		}
+		if (Store.hasSelections) {
+			Store.selIndexes = this.selectedIndexes.concat();
+			this.selectAll("unselectAll");
+		}
+		
+		// Sort the body data by type:
+		if (cSortType === "reverse") {
+			rawData.reverse();
+		} else {
+			rawData.sort(function(a, b) { return that.getSortResult(cSortType, cI, a[cI], b[cI]); });
+		}
+		
+		// Update the grid body HTML:
+		this.convertDataItem_Json(this.cellData.body, rawData, "<DIV class='mgC mgBR mgR", this.columns, false);
+		this.generateGridBody();
+		
+		// Generate new sort order array:
+		Store.newOrder = [];
+		Store.index = rawData.length;
+		while (Store.index) {
+			Store.newOrder[--Store.index] = rawData[Store.index][Store.storeAt];
+			rawData[Store.index].splice(Store.storeAt, 1);
+		}
+		
+		// Fire sort event:
+		this.head.fireEvent("columnSort", [(cSortType === "reverse"), Store.newOrder.concat(), clicked, cI]);
+		this.lastSortedColumn = cI;
+		
+		// Restore selected rows if applicable:
+		if (Store.hasSelections) {
+			Store.newSelIndexes = [];
+			Store.index = Store.selIndexes.length;
+			while (Store.index) {
+				Store.newSelIndexes[--Store.index] = Store.newOrder.indexOf(Store.selIndexes[Store.index]);
+			}
+			this.selectIndexes(Store.newSelIndexes);
+		}
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	getSortResult : function(type, columnIndex, a, b, keyA, keyB) {
+		if (a === b) {
+			return 0;
+		}
+		
+		keyA = type + "_" + a;
+		keyB = type + "_" + b;
+		
+		if (this.cache[keyA] === undefined) {
+			this.cache[keyA] = (type === "string") ? a : 
+			                   (type === "number") ? parseFloat(a) || -Infinity : 
+			                   (type === "date") ? new Date(a).getTime() || -Infinity : 
+			                   (type === "custom") ? this.options.customSortCleaner(a, columnIndex) : a;
+		}
+		if (this.cache[keyB] === undefined) {
+			this.cache[keyB] = (type === "string") ? b : 
+			                   (type === "number") ? parseFloat(b) || -Infinity : 
+			                   (type === "date") ? new Date(b).getTime() || -Infinity : 
+			                   (type === "custom") ? this.options.customSortCleaner(b, columnIndex) : b;
+		}
+		
+		return (this.cache[keyA] < this.cache[keyB]) ? -1 : 1;
+	}, 
+	
+	//////////////////////////////////////////////////////////////////////////////////
 	selectIndexes : function(indexes) {
 		var toSelect = [], 
 		    toSelectI = 0, 
@@ -652,7 +775,7 @@ var MooGrid = new Class({
 		}
 		this.selectedIndexes.combine(toSelect);
 		if (controlPressed || shiftPressed) {
-			setTimeout(this.clearTextSelections, 25);
+			window.setTimeout(this.clearTextSelections, 25);
 		}
 		
 		this.body.fireEvent("rowSelect", [toSelect, toRemove, event.target, rowIndex]);
@@ -787,4 +910,3 @@ var MooGrid = new Class({
 		}
 	}
 });
-
