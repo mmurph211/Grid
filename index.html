@@ -31,7 +31,7 @@
 		.mgBodyFixed2{*position:absolute;*z-index:1;*top:0;*left:0;*overflow:hidden}
 		.mgFootFixed{position:absolute;z-index:3;bottom:0;left:0;overflow:hidden}
 		.mgCl{display:inline-block;*display:inline;zoom:1;vertical-align:top}
-		.mgHR{border-width:0 1px 1px 0;border-color:#aaa #ccc!important;background-color:#a0c8ee;background-position:0 0;background-repeat:repeat-x;color:#111!important}
+		.mgHR{border-width:0 1px 1px 0;border-color:#aaa #ccc!important;zoom:1;background-color:#a0c8ee;background-position:0 0;background-repeat:repeat-x;color:#111!important}
 		.mgBR{border-width:0 0 1px 0}
 		.mgFR{border-width:1px 1px 0 0;border-color:#aaa #ccc!important;background-color:#a0c8ee;background-position:0 -19px;background-repeat:repeat-x}
 		.mgFCl .mgBR{border-color:#ccc!important}
@@ -55,15 +55,15 @@
 	<textarea id="dev"></textarea><br>
 	<textarea id="srcXml"></textarea>
 	
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/mootools/1.3.2/mootools-yui-compressed.js"></script>
+	<script type="text/javascript" src="javascripts/demo_compressed.js"></script>
 	<!--
-	<script type="text/javascript" src="javascripts/mootools-core-1.3-full-nocompat-yc.js"></script>
-	<script type="text/javascript" src="javascripts/mootools-more.js"></script>
+	<script type="text/javascript" src="javascripts/mootools-more-1.3.2.1.js"></script>
 	<script type="text/javascript" src="javascripts/MooGrid.js"></script>
 	-->
-	<script type="text/javascript" src="javascripts/demo_compressed.js"></script>
 	<script type="text/javascript">
 		var GridDemo = new Class({
-			Binds : ["generateMooGrid", "syncRowSelections", "stopCheckboxStateChange"], 
+			Binds : ["generateMooGrid", "syncRowSelections", "stopCheckboxStateChange", "syncCheckboxArray"], 
 			
 			grid : null, 
 			
@@ -75,12 +75,15 @@
 			//////////////////////////////////////////////////////////////////////////////////
 			generateMooGrid : function(event) {
 				this.grid = new MooGrid("demoDiv", {
+					noCache : false, 
 					allowGridResize : true, 
 					allowColumnResize : true, 
+					allowClientSideSorting : true, 
 					allowSelections : true, 
 					allowMultipleSelections : true, 
 					fixedCols : 2, 
 					colBGColors : ["#cee6fc", "#cee6fc"], 
+					colSortTypes : ["none", "string", "string", "string", "number", "string", "string", "string", "string", "string"], 
 					srcType : "json_local", 
 					json_local : this.getJSONData()
 					// xml_remote : "data_v2.xml" // Example
@@ -89,6 +92,7 @@
 				});
 				
 				this.checkboxes = [];
+				this.grid.head.addEvent("columnSort", this.syncCheckboxArray);
 				this.grid.body.addEvent("rowSelect", this.syncRowSelections);
 			}, 
 			
@@ -132,9 +136,14 @@
 			}, 
 			
 			//////////////////////////////////////////////////////////////////////////////////
+			syncCheckboxArray : function(isReversed, newOrder, headerCell, columnIndex) {
+				this.checkboxes = [];
+			}, 
+			
+			//////////////////////////////////////////////////////////////////////////////////
 			getJSONData : function() {
 				var cbHtml = "<input type=checkbox class=mgCb>&nbsp;", 
-				    cbHeader = "<p id=mgCbh>" + ((Browser.ie7) ? "&nbsp;&nbsp;&nbsp;" : "");
+				    cbHeader = "<p id=mgCbh>&nbsp;&nbsp;&nbsp;";
 				
 				return { // Example
 					Head : [
@@ -261,7 +270,7 @@
 						[cbHtml, "account0118", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
 						[cbHtml, "account0119", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
 						[cbHtml, "account0120", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"]
-					],
+					], 
 					Foot : [
 						["", "Average:", "Jim", "Bo", "36", "Delaware", "superman@gmail.com", "Green", "Spring", "Extra"]
 					]
