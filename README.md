@@ -6,12 +6,13 @@ HTML-based table with fixed headers, fixed footers, fixed left columns, row sele
 Demo
 ----
 
-(http://www.matts411.com/static/demos/grid/index.html)
+http://www.matts411.com/static/demos/grid/index.html
 
 Features
 --------
 
 * Cross browser compatible (Chrome, Firefox, Safari, Opera, Internet Explorer 7+)
+* Framework independent - Works with jQuery, Mootools, etc.
 * Fixed header, footer, columns
 * Column resizing
 * Column sorting
