@@ -1,284 +1,139 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-<head>
-	<title>MooGrid Demo</title>
-	<meta http-equiv="X-UA-Compatible" content="IE=8">
-	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-	<!-- <link href="stylesheets/MooGrid.css" rel="stylesheet" type="text/css"> -->
-	<style>
-		html,body{height:100%;margin:0px;padding:0px;overflow:hidden;}
-		body{background:-webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));background:-moz-linear-gradient(top,  #fff,  #eee);}
-		h1{display:block;margin:20px 20px 0px 20px;line-height:21px;font-size:21px;font-family:Verdana;color:#333;}
-		a{font-size:11px;font-family:Verdana;text-decoration:none;color:#0000ff;}
-		a:hover{text-decoration:underline;}
-		#demoDiv{margin:20px;width:700px;height:290px;-moz-box-shadow:2px 2px 2px #777;-webkit-box-shadow:2px 2px 2px #777;box-shadow:2px 2px 2px #777;}
-		#demoLinks{margin:0px 20px;}
-		#dev{display:none;margin:0px 20px 20px 20px;width:790px;height:120px;}
-		#srcXml{display:none;}
-		#mgCbh{margin:0px;padding:0px;width:1.0em;*width:auto;height:1.0em;*height:auto;}
-		.mgCb{position:absolute;z-index:1;display:block;margin:-1px 0px 0px -1px;*margin:-4px 0px 0px -2px;padding:0px;}
+	<head>
+		<title>Grid Demo</title>
+		<meta name="description" content="HTML-based table with fixed headers, fixed footers, fixed left columns, row selection, sorting and more. Open source.">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<link href="src/Grid.css" rel="stylesheet" type="text/css">
+		<link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" type="text/css">
+		<style>
+			HTML{margin:0px;padding:0px;min-height:100%;background-color:#5597cf;color:#eee;background-image:-webkit-linear-gradient(bottom, #80b4e1, #5597cf);background-image:-moz-linear-gradient(bottom, #80b4e1, #5597cf);background-image:-ms-linear-gradient(bottom, #80b4e1, #5597cf);background-image:-o-linear-gradient(bottom, #80b4e1, #5597cf);background-image:linear-gradient(bottom, #80b4e1, #5597cf);}
+			BODY{margin:0px;padding:0px;font-family:"Droid Sans",sans-serif;-webkit-font-smoothing:antialiased;}
+			::-webkit-scrollbar{width:12px;height:12px;}
+			::-webkit-scrollbar-thumb{border:1px solid #B8B8B8;-webkit-border-radius:0px;border-radius:0px;background:#ccc;}
+			::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:#eee;}
+			A{color:#eee;text-decoration:none;cursor:pointer;}
+			A:hover{text-decoration:underline;}
+			#hdr{display:block;margin:40px 0px 0px 80px;padding:0px;line-height:1.2em;font-size:28px;color:#fff;text-shadow:0px 1px 1px rgba(51, 51, 51, 0.1);}
+			#demoLinks{margin:0px 0px 0px 80px;line-height:1.5em;font-size:12px;}
+			#demoDiv{margin:20px 0px 40px 80px;padding:16px;border:1px solid #ccc;border-radius:16px;width:800px;height:360px;background-color:#eee;background-image:-webkit-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 2%);background-image:-moz-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 2%);background-image:-ms-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 2%);background-image:-o-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 2%);background-image:linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 2%);box-shadow:1px 1px 1px rgba(51, 51, 51, 0.1);}
+			#demoGrid{width:100%;height:100%;background-color:#fff;color:#1a2731;}
+		</style>
+	</head>
+	<body>
+		<h1 id="hdr">Grid Demo</h1>
+		<div id="demoLinks">
+			<a href="http://www.matts411.com/post/grid/" title="Blog project page">Home</a>
+			 &nbsp;-&nbsp; 
+			<a href="http://github.com/mmurph211/Grid" title="GitHub">Github Project</a>
+			 &nbsp;-&nbsp; 
+			<a href="https://github.com/mmurph211/Grid/blob/master/src/Grid.js" title="View Script">Script Source</a>
+			 &nbsp;-&nbsp; 
+			<a href="https://github.com/mmurph211/Grid/blob/master/src/Grid.css" title="View CSS">CSS Source</a>
+		</div>
 		
-		.mgBase{position:relative;border-width:1px 0 0 1px;border-color:#9eb6ce;border-style:solid;width:100%;height:100%;padding:0;background-color:#fff;font-family:Verdana;font-size:.70em;line-height:100%;white-space:nowrap;overflow:hidden;cursor:default}
-		.mgBaseResize{position:absolute;z-index:5;bottom:0;right:0;width:16px;height:16px;background-color:transparent;background-position:0 -38px;background-repeat:no-repeat;cursor:nw-resize}
-		.mgRS{display:none;margin:0 0 -19px 0;width:4px;height:19px;cursor:e-resize}
-		.mgResizeDragger{position:absolute;z-index:5;top:0;width:3px;background-color:#777}
-		.mgEmptySetMsg{padding:10px;font-style:italic}
-		.mgHead{position:absolute;z-index:2;top:0;left:0;overflow:hidden}
-		.mgBody{width:100%;height:100%;overflow:scroll}
-		.mgFoot{position:absolute;z-index:2;left:0;overflow:hidden}
-		.mgHeadFixed{position:absolute;z-index:3;top:0;left:0;overflow:hidden}
-		.mgBodyFixed{position:absolute;*position:static;z-index:1;top:0;left:0;overflow:hidden}
-		.mgBodyFixed2{*position:absolute;*z-index:1;*top:0;*left:0;*overflow:hidden}
-		.mgFootFixed{position:absolute;z-index:3;bottom:0;left:0;overflow:hidden}
-		.mgCl{display:inline-block;*display:inline;zoom:1;vertical-align:top}
-		.mgHR{border-width:0 1px 1px 0;border-color:#aaa #ccc!important;zoom:1;background-color:#a0c8ee;background-position:0 0;background-repeat:repeat-x;color:#111!important}
-		.mgBR{border-width:0 0 1px 0}
-		.mgFR{border-width:1px 1px 0 0;border-color:#aaa #ccc!important;background-color:#a0c8ee;background-position:0 -19px;background-repeat:repeat-x}
-		.mgFCl .mgBR{border-color:#ccc!important}
-		.mgC{padding:4px 8px 4px 4px;border-color:#ddd #eee;border-style:solid;color:#333;vertical-align:top;visibility:hidden;cursor:default}
-		.mgBaseResize,.mgHR,.mgFR{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA0CAMAAAC0EEhzAAAAS1BMVEWFhYX///+FhYWhye6jyu+ly++lzPCnzfCqz/Grz/Gs0PKv0vOy1PS11vW42PW72va+3PfB3vjE3/nG4frH4fnI4vrK5PvM5fzO5vyrwE43AAAAAnRSTlMAAHaTzTgAAACRSURBVBjTfc9bDoJAEAXRAhVfvHGA/a9UhIBjTeL5ILmX7tAwC5MwCiG8QoxB6IVOaIVGqIVKKIWn8BBuwlUovi6fB2fhJGmRrBSSfjY5LLr6vp6e/FwpVEItNEIrdEIvDEIQRmESZiGTvwVZriLnt8iJC5b3xCtrjifWfBTbfLSy52Niz1txzO8rUd4morykN2s7IaFNf/WDAAAAAElFTkSuQmCC);*background-image:url("stylesheets/MooGrid.png")}
-	</style>
-</head>
-<body>
-	<h1>MooGrid Demo</h1>
-	<div id="demoLinks">
-		<a href="http://www.matts411.com/post/moogrid/" title="Blog project page">Blog project page</a>
-		 | 
-		<a href="http://github.com/mmurph211/Grid" title="GitHub">GitHub project page</a>
-		 | 
-		<a href="https://github.com/mmurph211/Grid/blob/master/javascripts/MooGrid.js" title="View Script">View Script Source</a>
-		 | 
-		<a href="https://github.com/mmurph211/Grid/blob/master/stylesheets/MooGrid.css" title="View CSS">View CSS Source</a>
-	</div>
-	
-	<div id="demoDiv"></div>
-	<textarea id="dev"></textarea><br>
-	<textarea id="srcXml"></textarea>
-	
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/mootools/1.3.2/mootools-yui-compressed.js"></script>
-	<script type="text/javascript" src="javascripts/demo_compressed.js"></script>
-	<!--
-	<script type="text/javascript" src="javascripts/mootools-more.js"></script>
-	<script type="text/javascript" src="javascripts/MooGrid.js"></script>
-	-->
-	<script type="text/javascript">
-		var GridDemo = new Class({
-			Binds : ["generateMooGrid", "syncRowSelections", "stopCheckboxStateChange", "syncCheckboxArray"], 
-			
-			grid : null, 
-			
-			//////////////////////////////////////////////////////////////////////////////////
-			initialize : function() {
-				window.addEvent("domready", this.generateMooGrid);
-			}, 
-			
-			//////////////////////////////////////////////////////////////////////////////////
-			generateMooGrid : function(event) {
-				this.grid = new MooGrid("demoDiv", {
-					noCache : false, 
-					allowGridResize : true, 
-					allowColumnResize : true, 
-					allowClientSideSorting : true, 
-					allowSelections : true, 
-					allowMultipleSelections : true, 
-					fixedCols : 2, 
-					colBGColors : ["#cee6fc", "#cee6fc"], 
-					colSortTypes : ["none", "string", "string", "string", "number", "string", "string", "string", "string", "string"], 
-					srcType : "json_local", 
-					json_local : this.getJSONData()
-					// xml_remote : "data_v2.xml" // Example
-					// xml_local : $("srcXml").value // Example
-					// json_remote : "data_json_v2.txt" // Example
-				});
+		<div id="demoDiv"><div id="demoGrid"></div></div>
+		
+		<script src="src/Grid.js"></script>
+		<script>
+			(function(window, document, undefined) {
+				"use strict";
 				
-				this.checkboxes = [];
-				this.grid.head.addEvent("columnSort", this.syncCheckboxArray);
-				this.grid.body.addEvent("rowSelect", this.syncRowSelections);
-			}, 
-			
-			//////////////////////////////////////////////////////////////////////////////////
-			syncRowSelections : function(toSelect, toRemove, target, rowIndex) {
-				var cbs = this.checkboxes, 
-				    i;
+				var gridColSortTypes = ["string", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "string", "string", "string"], 
+				    gridColAlign = [], 
+				    gridData = {
+				    	Head : [
+				    		["<span id='demoHdr0'>Team</span>", 
+				    		 "<span id='demoHdr1' title='Wins'>W</span>", 
+				    		 "<span id='demoHdr2' title='Losses'>L</span>", 
+				    		 "<span id='demoHdr3' title='Ties'>T</span>", 
+				    		 "<span id='demoHdr4' title='Win Percentage'>Pct</span>", 
+				    		 "<span id='demoHdr5' title='Points For'>PF</span>", 
+				    		 "<span id='demoHdr6' title='Points Against'>PA</span>", 
+				    		 "<span id='demoHdr7' title='Net Points'>Net Pts</span>", 
+				    		 "<span id='demoHdr8' title='Home Record'>Home</span>", 
+				    		 "<span id='demoHdr9' title='Road Record'>Road</span>", 
+				    		 "<span id='demoHdr10' title='Division Record'>Div</span>", 
+				    		 "<span id='demoHdr11' title='Conference Record'>Conf</span>", 
+				    		 "<span id='demoHdr12' title='Last 5 Games'>Last 5</span>", 
+				    		 "<span id='demoHdr13'>Streak</span>", 
+				    		 "<span id='demoHdr14'>Division</span>", 
+				    		 "<span id='demoHdr15'>Conference</span>"]
+				    	],
+				    	Body : [
+				    		["New England Patriots", "13", "3", "0", ".812", "513", "342", "+171", "7-1-0", "6-2-0", "5-1-0", "10-2-0", "5-0-0", "Won 8", "East", "AFC"], 
+				    		["New York Jets", "8", "8", "0", ".500", "377", "363", "+14", "6-2-0", "2-6-0", "3-3-0", "6-6-0", "2-3-0", "Lost 3", "East", "AFC"], 
+				    		["Miami Dolphins", "6", "10", "0", ".375", "329", "313", "+16", "4-4-0", "2-6-0", "3-3-0", "5-7-0", "3-2-0", "Won 1", "East", "AFC"], 
+				    		["Buffalo Bills", "6", "10", "0", ".375", "372", "434", "-62", "5-3-0", "1-7-0", "1-5-0", "4-8-0", "1-4-0", "Lost 1", "East", "AFC"], 
+				    		["Baltimore Ravens", "12", "4", "0", ".750", "378", "266", "+112", "8-0-0", "4-4-0", "6-0-0", "9-3-0", "4-1-0", "Won 2", "North", "AFC"], 
+				    		["Pittsburgh Steelers", "12", "4", "0", ".750", "325", "227", "+98", "7-1-0", "5-3-0", "4-2-0", "9-3-0", "4-1-0", "Won 2", "North", "AFC"], 
+				    		["Cincinnati Bengals", "9", "7", "0", ".562", "344", "323", "+21", "4-4-0", "5-3-0", "2-4-0", "6-6-0", "2-3-0", "Lost 1", "North", "AFC"], 
+				    		["Cleveland Browns", "4", "12", "0", ".250", "218", "307", "-89", "3-5-0", "1-7-0", "0-6-0", "3-9-0", "0-5-0", "Lost 6", "North", "AFC"], 
+				    		["Houston Texans", "10", "6", "0", ".625", "381", "278", "+103", "5-3-0", "5-3-0", "4-2-0", "8-4-0", "2-3-0", "Lost 3", "South", "AFC"], 
+				    		["Tennessee Titans", "9", "7", "0", ".562", "325", "317", "+8", "5-3-0", "4-4-0", "3-3-0", "7-5-0", "3-2-0", "Won 2", "South", "AFC"], 
+				    		["Jacksonville Jaguars", "5", "11", "0", ".312", "243", "329", "-86", "4-4-0", "1-7-0", "3-3-0", "4-8-0", "2-3-0", "Won 1", "South", "AFC"], 
+				    		["Indianapolis Colts", "2", "14", "0", ".125", "243", "430", "-187", "2-6-0", "0-8-0", "2-4-0", "2-10-0", "2-3-0", "Lost 1", "South", "AFC"], 
+				    		["Denver Broncos", "8", "8", "0", ".500", "309", "390", "-81", "3-5-0", "5-3-0", "3-3-0", "6-6-0", "2-3-0", "Lost 3", "West", "AFC"], 
+				    		["San Diego Chargers", "8", "8", "0", ".500", "406", "377", "+29", "5-3-0", "3-5-0", "3-3-0", "7-5-0", "4-1-0", "Won 1", "West", "AFC"], 
+				    		["Oakland Raiders", "8", "8", "0", ".500", "359", "433", "-74", "3-5-0", "5-3-0", "3-3-0", "6-6-0", "1-4-0", "Lost 1", "West", "AFC"], 
+				    		["Kansas City Chiefs", "7", "9", "0", ".438", "212", "338", "-126", "3-5-0", "4-4-0", "3-3-0", "4-8-0", "3-2-0", "Won 1", "West", "AFC"], 
+				    		["New York Giants", "9", "7", "0", ".562", "394", "400", "-6", "4-4-0", "5-3-0", "3-3-0", "5-7-0", "3-2-0", "Won 2", "East", "NFC"], 
+				    		["Philadelphia Eagles", "8", "8", "0", ".500", "396", "328", "+68", "3-5-0", "5-3-0", "5-1-0", "6-6-0", "4-1-0", "Won 4", "East", "NFC"], 
+				    		["Dallas Cowboys", "8", "8", "0", ".500", "369", "347", "+22", "5-3-0", "3-5-0", "2-4-0", "6-6-0", "1-4-0", "Lost 2", "East", "NFC"], 
+				    		["Washington Redskins", "5", "11", "0", ".312", "288", "367", "-79", "2-6-0", "3-5-0", "2-4-0", "5-7-0", "1-4-0", "Lost 2", "East", "NFC"], 
+				    		["Green Bay Packers", "15", "1", "0", ".938", "560", "359", "+201", "8-0-0", "7-1-0", "6-0-0", "12-0-0", "4-1-0", "Won 2", "North", "NFC"], 
+				    		["Detroit Lions", "10", "6", "0", ".625", "474", "387", "+87", "5-3-0", "5-3-0", "3-3-0", "6-6-0", "3-2-0", "Lost 1", "North", "NFC"], 
+				    		["Chicago Bears", "8", "8", "0", ".500", "353", "341", "+12", "5-3-0", "3-5-0", "3-3-0", "7-5-0", "1-4-0", "Won 1", "North", "NFC"], 
+				    		["Minnesota Vikings", "3", "13", "0", ".188", "340", "449", "-109", "1-7-0", "2-6-0", "0-6-0", "3-9-0", "1-4-0", "Lost 1", "North", "NFC"], 
+				    		["New Orleans Saints", "13", "3", "0", ".812", "547", "339", "+208", "8-0-0", "5-3-0", "5-1-0", "9-3-0", "5-0-0", "Won 8", "South", "NFC"], 
+				    		["Atlanta Falcons", "10", "6", "0", ".625", "402", "350", "+52", "6-2-0", "4-4-0", "3-3-0", "7-5-0", "3-2-0", "Won 1", "South", "NFC"], 
+				    		["Carolina Panthers", "6", "10", "0", ".375", "406", "429", "-23", "3-5-0", "3-5-0", "2-4-0", "3-9-0", "3-2-0", "Lost 1", "South", "NFC"], 
+				    		["Tampa Bay Buccaneers", "4", "12", "0", ".250", "287", "494", "-207", "3-5-0", "1-7-0", "2-4-0", "3-9-0", "0-5-0", "Lost 10", "South", "NFC"], 
+				    		["San Francisco 49ers", "13", "3", "0", ".812", "380", "229", "+151", "7-1-0", "6-2-0", "5-1-0", "10-2-0", "4-1-0", "Won 3", "West", "NFC"], 
+				    		["Arizona Cardinals", "8", "8", "0", ".500", "312", "348", "-36", "6-2-0", "2-6-0", "4-2-0", "7-5-0", "4-1-0", "Won 1", "West", "NFC"], 
+				    		["Seattle Seahawks", "7", "9", "0", ".438", "321", "315", "+6", "4-4-0", "3-5-0", "3-3-0", "6-6-0", "3-2-0", "Lost 2", "West", "NFC"], 
+				    		["St. Louis Rams", "2", "14", "0", ".125", "193", "407", "-214", "1-7-0", "1-7-0", "0-6-0", "1-11-0", "0-5-0", "Lost 7", "West", "NFC"]
+				    	]
+				    };
 				
-				// Set checkbox array if not yet set:
-				if (cbs.length === 0 && !!this.grid) {
-					this.checkboxes = cbs = Array.from(this.grid.bodyFixed2.getElementsByTagName("INPUT"));
-				}
-				
-				// Prevent checkbox state change if clicked:
-				if (!!target && target.className === "mgCb") {
-					target = $(target);
-					if (target.retrieve("eventsSet") !== "true") {
-						target.addEvent("click", this.stopCheckboxStateChange).store("eventsSet", "true");
+				var onColumnSort = function(newIndexOrder, columnIndex, lastColumnIndex) {
+					var doc = document;
+					if (columnIndex !== lastColumnIndex) {
+						if (lastColumnIndex > -1) {
+							doc.getElementById("demoHdr" + (lastColumnIndex - 1)).parentNode.style.backgroundColor = "";
+						}
+						doc.getElementById("demoHdr" + (columnIndex - 1)).parentNode.style.backgroundColor = "#f7f7f7";
 					}
-				}
-				
-				// Update checkbox states:
-				i = toRemove.length;
-				while (i) {
-					cbs[toRemove[--i]].checked = false;
-				}
-				i = toSelect.length;
-				while (i) {
-					cbs[toSelect[--i]].checked = true;
-				}
-			}, 
-			
-			//////////////////////////////////////////////////////////////////////////////////
-			stopCheckboxStateChange : function(event) {
-				var cb = $(event.target), 
-				    parentCell = cb.getParent(".mgBR"), 
-				    rowIndex = /mgR(\d+)/.exec(parentCell.get("class"))[1].toInt(), 
-				    rowIndexSelected = this.grid.selectedIndexes.contains(rowIndex);
-				
-				cb.checked = rowIndexSelected;
-			}, 
-			
-			//////////////////////////////////////////////////////////////////////////////////
-			syncCheckboxArray : function(isReversed, newOrder, headerCell, columnIndex) {
-				this.checkboxes = [];
-			}, 
-			
-			//////////////////////////////////////////////////////////////////////////////////
-			getJSONData : function() {
-				var cbHtml = "<input type=checkbox class=mgCb>&nbsp;", 
-				    cbHeader = "<p id=mgCbh>&nbsp;&nbsp;&nbsp;";
-				
-				return { // Example
-					Head : [
-						[cbHeader, "Account", "First Name", "Last Name", "Age", "State", "Email Address", "Favorite Color", "Favorite Season", "Extra Column"]
-					], 
-					Body : [
-						[cbHtml, "account0001", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0002", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0003", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "", "Spring", "Extra"], 
-						[cbHtml, "account0004", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0005", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0006", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0007", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0008", "Bat", "Man", "", "New York", "batman@gocellam.net", "Black", "", "Extra"], 
-						[cbHtml, "account0009", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0010", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0011", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0012", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0013", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0014", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0015", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0016", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0017", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0018", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0019", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0020", "Bat", "Man", "", "New York", "batman@gocellam.net", "Black", "", "Extra"], 
-						[cbHtml, "account0021", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0022", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0023", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0024", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0025", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0026", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0027", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0028", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0029", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0030", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0031", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0032", "Bat", "Man", "", "New York", "batman@gocellam.net", "Black", "", "Extra"], 
-						[cbHtml, "account0033", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0034", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0035", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0036", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0037", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0038", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0039", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0040", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0041", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0042", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0043", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0044", "Bat", "Man", "", "New York", "batman@gocellam.net", "Black", "", "Extra"], 
-						[cbHtml, "account0045", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0046", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0047", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0048", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0049", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0050", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0051", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0052", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0053", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0054", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0055", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0056", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
-						[cbHtml, "account0057", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0058", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0059", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0060", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0061", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0062", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0063", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0064", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0065", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0066", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0067", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0068", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
-						[cbHtml, "account0069", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0070", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0071", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0072", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0073", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0074", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0075", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0076", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0077", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0078", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0079", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0080", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
-						[cbHtml, "account0081", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0082", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0083", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0084", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0085", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0086", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0087", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0088", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0089", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0090", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0091", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0092", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
-						[cbHtml, "account0093", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0094", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0095", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0096", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0097", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0098", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0099", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0100", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0101", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0102", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0103", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0104", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
-						[cbHtml, "account0105", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0106", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0107", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0108", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"], 
-						[cbHtml, "account0109", "Jim", "Bo", "25", "Delaware", "Jim.Bo@gmail.com", "Blue", "Winter", "Extra"], 
-						[cbHtml, "account0110", "Alley", "Bo", "28", "Delaware", "Alley.Bo@gmail.com", "Red", "Summer", "Extra"], 
-						[cbHtml, "account0111", "Pablo", "Picasso", "65", "N/A", "pablo.picasso@universe.com", "All", "Spring", "Extra"], 
-						[cbHtml, "account0112", "Jen", "Dotsen", "36", "Maryland", "jdotsen@yahoo.com", "Pink", "Winter", "Extra"], 
-						[cbHtml, "account0113", "Bill", "Tucker", "12", "Wyoming", "superman@gmail.com", "Green", "Fall", "Extra"], 
-						[cbHtml, "account0114", "Mary", "Swanson", "35", "Colorado", "mary.swanson@samsonite.com", "Green", "Spring", "Extra"], 
-						[cbHtml, "account0115", "Chris", "Tucker", "38", "California", "ctucker@rushhour.com", "Orange", "Summer", "Extra"], 
-						[cbHtml, "account0116", "Bat", "Man", "", "New York", "batman@gotham.net", "Black", "", "Extra"], 
-						[cbHtml, "account0117", "Jimmy", "Johnson", "31", "Nascar", "jj@nascar.us", "White", "Summer", "Extra"], 
-						[cbHtml, "account0118", "Britney", "Spears", "11", "Tennessee", "bspears@asylum.com", "Red", "Spring", "Extra"], 
-						[cbHtml, "account0119", "M", "Jordan", "23", "Illinois", "mjordan@dabulls.com", "Red", "Winter", "Extra"], 
-						[cbHtml, "account0120", "50", "Cent", "34", "New York", "fiddy@cent.com", "Platinum", "Fall", "Extra"]
-					], 
-					Foot : [
-						["", "Average:", "Jim", "Bo", "36", "Delaware", "superman@gmail.com", "Green", "Spring", "Extra"]
-					]
 				};
-			}
-		});
-		
-		new GridDemo();
-	</script>
-</body>
+				
+				var onResizeGrid = function(newWidth, newHeight) {
+					var demoDivStyle = document.getElementById("demoDiv").style;
+					demoDivStyle.width = newWidth + "px";
+					demoDivStyle.height = newHeight + "px";
+				};
+				
+				for (var i=0, col; col=gridColSortTypes[i]; i++) {
+					gridColAlign[i] = (col === "number") ? "right" : "left";
+				}
+				
+				var myGrid = new Grid("demoGrid", {
+				    	srcType : "json", 
+				    	srcData : gridData, 
+				    	allowGridResize : true, 
+				    	allowColumnResize : true, 
+				    	allowClientSideSorting : true, 
+				    	allowSelections : true, 
+				    	allowMultipleSelections : true, 
+				    	showSelectionColumn : true, 
+				    	onColumnSort : onColumnSort, 
+				    	onResizeGrid : onResizeGrid, 
+				    	colAlign : gridColAlign, 
+				    	colBGColors : ["#fafafa"], 
+				    	colSortTypes : gridColSortTypes, 
+				    	fixedCols : 1
+				    });
+			})(this, this.document);
+		</script>
+	</body>
 </html>

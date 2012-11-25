@@ -1,50 +1,44 @@
-
 /*
- MooGrid
- 
- MIT-style license. Copyright 2011 Matt V. Murphy
+ Grid
+ MIT-style license. Copyright 2012 Matt V. Murphy
 */
 .mgBase {
 	position : relative;
-	border-width : 1px 0px 0px 1px;
-	border-color : #9eb6ce;
-	border-style : solid;
+	padding : 0px;
 	width : 100%;
 	height : 100%;
-	padding : 0px;
-	background-color : #fff;
-	font-family : Verdana;
-	font-size : 0.70em;
 	line-height : 100%;
+	font-size : 12px;
+	background-color : #fff;
 	white-space : nowrap;
 	overflow : hidden;
 	cursor : default;
+	-webkit-tap-highlight-color : transparent;
 }
 .mgBaseResize {
 	position : absolute;
 	z-index : 5;
 	bottom : 0px;
 	right : 0px;
-	width : 16px;
-	height : 16px;
-	background-color : transparent;
-	background-position : 0px -38px;
-	background-repeat: no-repeat;
+	background-color : #eee;
 	cursor : nw-resize;
+	-webkit-user-select : none;
+}
+.mgBaseResize:hover {
+	background-color : #ccc;
 }
 .mgRS {
 	display : none;
-	margin : 0px 0px -19px 0px;
 	width : 4px;
-	height : 19px;
 	cursor : e-resize;
+	-webkit-user-select : none;
 }
 .mgResizeDragger {
 	position : absolute;
 	z-index : 5;
 	top : 0px;
 	width : 3px;
-	background-color : #777;
+	background-color : #ccc;
 }
 .mgEmptySetMsg {
 	padding : 10px;
@@ -102,39 +96,62 @@
 	*display : inline;
 	zoom : 1;
 	vertical-align : top;
+	overflow : hidden;
 }
 .mgHR {
+	padding : 4px 12px 4px 6px !important;
 	border-width : 0px 1px 1px 0px;
-	border-color : #aaa #ccc !important;
+	border-color : #ccc !important;
 	zoom : 1;
-	background-color : #a0c8ee;
+	background-color : #eee;
 	background-position : 0px 0px;
 	background-repeat: repeat-x;
-	color : #111 !important;
+	font-weight : bold;
+	color : #333 !important;
+	-webkit-user-select : none;
+	-moz-user-select : none;
+	-ms-user-select : none;
+	-o-user-select : none;
+	user-select : none;
 }
 .mgBR {
 	border-width : 0px 0px 1px 0px;
 }
 .mgFR {
 	border-width : 1px 1px 0px 0px;
-	border-color : #aaa #ccc !important;
-	background-color : #a0c8ee;
+	border-color : #ccc !important;
+	background-color : #eee;
 	background-position : 0px -19px;
 	background-repeat: repeat-x;
 }
-.mgFCl .mgBR {
-	border-color : #ccc !important;
-}
 .mgC {
-	padding : 4px 8px 4px 4px;
-	border-color : #ddd #eee;
+	padding : 6px 12px 6px 6px;
+	border-color : #eee;
 	border-style : solid;
 	color : #333;
+	height : 1.5em;
+	line-height : 1.5em;
 	vertical-align : top;
+	white-space : nowrap;
 	visibility : hidden;
 	cursor : default;
+	overflow : hidden;
 }
-.mgBaseResize, .mgHR, .mgFR {
-	background-image : url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA0CAMAAAC0EEhzAAAAS1BMVEWFhYX///+FhYWhye6jyu+ly++lzPCnzfCqz/Grz/Gs0PKv0vOy1PS11vW42PW72va+3PfB3vjE3/nG4frH4fnI4vrK5PvM5fzO5vyrwE43AAAAAnRSTlMAAHaTzTgAAACRSURBVBjTfc9bDoJAEAXRAhVfvHGA/a9UhIBjTeL5ILmX7tAwC5MwCiG8QoxB6IVOaIVGqIVKKIWn8BBuwlUovi6fB2fhJGmRrBSSfjY5LLr6vp6e/FwpVEItNEIrdEIvDEIQRmESZiGTvwVZriLnt8iJC5b3xCtrjifWfBTbfLSy52Niz1txzO8rUd4morykN2s7IaFNf/WDAAAAAElFTkSuQmCC);
-	*background-image : url("MooGrid.png");
+.mgSH {
+	display : inline-block;
+	*display : inline;
+	zoom : 1;
+	width : 15px;
+}
+.mgCb, .mgRd {
+	margin : -1px 0px 0px 0px;
+	padding : 0px;
+	width : 15px;
+	height : 15px;
+	max-height : 1.0em;
+	vertical-align : middle;
+	overflow : hidden;
+}
+.mgRd {
+	margin-top : -2px;
 }
