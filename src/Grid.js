@@ -8,25 +8,22 @@
 	"use strict";
 	
 	var Grid = function(element, options) {
-		if (typeof element === "string") {
-			element = document.getElementById(element);
-		}
-		if ((this.element = element)) {
+		if ((this.element = (typeof(element) === "string") ? $(element) : element)) {
 			this.css = { idRulePrefix : "", sheet : null, rules : {} };
 			this.columns = 0;
 			this.columnWidths = [];
-			this.lastSortedColumn = -1;
+			this.cellData = { head : [], body : [], foot : [] };
 			this.alignTimer = null;
 			this.rawData = [];
-			this.selectedIndexes = [];
-			this.cellData = { head : [], body : [], foot : [] };
 			this.sortCache = {};
+			this.lastSortedColumn = [-1, null];
+			this.selectedIndexes = [];
 			this.usesTouch = (window.ontouchstart !== undefined);
 			this.startEvt = (this.usesTouch) ? "touchstart" : "mousedown";
 			this.moveEvt = (this.usesTouch) ? "touchmove" : "mousemove";
 			this.endEvt = (this.usesTouch) ? "touchend" : "mouseup";
 			this.options = {
-				srcType : "", // "xml", "json"
+				srcType : "", // "dom", "json", "xml"
 				srcData : "", 
 				allowGridResize : false, 
 				allowColumnResize : false, 
@@ -61,6 +58,7 @@
 			this.options.allowColumnResize = this.options.allowColumnResize && !this.usesTouch;
 			this.options.allowMultipleSelections = this.options.allowMultipleSelections && this.options.allowSelections;
 			this.options.showSelectionColumn = this.options.showSelectionColumn && this.options.allowSelections;
+			this.options.fixedCols = (!this.usesTouch) ? this.options.fixedCols : 0;
 			this.init();
 		}
 	};
@@ -76,15 +74,18 @@
 		
 		this.generateSkeleton();
 		this.addEvents();
+		
+		// DOM:
+		if (srcType === "dom" && (srcData = (typeof(srcData) === "string") ? $(srcData) : srcData)) {
+			this.convertData(this.convertDomDataToJsonData(srcData));
+			
 		// JSON:
-		if (srcType === "json" && (data = parseJSON(srcData))) {
+		} else if (srcType === "json" && (data = parseJSON(srcData))) {
 			this.convertData(data);
 			
 		// XML:
 		} else if (srcType === "xml" && (data = parseXML(srcData))) {
-			if ((data = data.getElementsByTagName("grid")[0])) {
-				this.convertData(this.convertXmlDataToJsonData(data));
-			}
+			this.convertData(this.convertXmlDataToJsonData(data));
 		}
 		
 		this.generateGrid();
@@ -109,14 +110,12 @@
 		this.parentDimensions = { x : this.element.offsetWidth, y : this.element.offsetHeight };
 		this.docFrag = doc.createDocumentFragment();
 		for (var i=0, elem; elem=elems[i]; i++) {
-			this[elem[0]] = doc.createElement("DIV");
-			this[elem[0]].className = elem[1];
+			(this[elem[0]] = doc.createElement("DIV")).className = elem[1];
 			this[elem[2]].appendChild(this[elem[0]]);
 		}
 		
 		if (this.options.allowGridResize) {
-			this.baseResize = document.createElement("DIV");
-			this.baseResize.className = "mgBaseResize";
+			(this.baseResize = doc.createElement("DIV")).className = "mgBaseResize";
 			this.base.appendChild(this.baseResize);
 		}
 	};
@@ -157,28 +156,55 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
+	Grid.prototype.convertDomDataToJsonData = function(data) {
+		var sections = { "thead" : "Head", "tbody" : "Body", "tfoot" : "Foot" }, 
+		    section, rows, row, cells, arr, arr2, i, j, k, 
+		    json = {};
+		
+		// Cycle through all table rows, change sections when needed:
+		if (((data || {}).tagName || "").toLowerCase() === "table") {
+			for (i=0, j=0, rows=data.rows; row=rows[i]; i++) {
+				if (row.sectionRowIndex === 0 && (section = sections[row.parentNode.tagName.toLowerCase()])) {
+					json[section] = arr = (json[section] || []);
+					j = arr.length;
+				}
+				arr[j++] = arr2 = [];
+				k = (cells = row.cells).length;
+				while (k) { arr2[--k] = cells[k].innerHTML; }
+			}
+		}
+		
+		return json;
+	};
+	
+	//////////////////////////////////////////////////////////////////////////////////
 	Grid.prototype.convertXmlDataToJsonData = function(data) {
-		var sections = ["Head", "Body", "Foot"], 
+		var sections = { "thead" : "Head", "tbody" : "Body", "tfoot" : "Foot" }, 
 		    cellText = (msie < 9) ? "text" : "textContent", 
-		    gEBT = "getElementsByTagName", 
-		    section, node, rows, cells, 
-		    arr, arr2, i, j, k, 
+		    nodes, node, section, rows, row, cells, cell, tag, n, i, j, 
+		    arr, arr2, a, a2, 
 		    json = {};
 		
 		// By section:
-		for (i=0; section=sections[i]; i++) {
-			if ((node = data[gEBT](section.toLowerCase())[0])) {
-				json[section] = arr = [];
-				
-				// By row:
-				j = (rows = node[gEBT]("row")).length;
-				while (j) {
-					arr[--j] = arr2 = [];
+		if ((nodes = (data.getElementsByTagName("table")[0] || {}).childNodes)) {
+			for (n=0; node=nodes[n]; n++) {
+				if ((section = sections[node.nodeName]) && (rows = node.childNodes)) {
+					json[section] = arr = (json[section] || []);
+					a = arr.length;
 					
-					// By cell:
-					k = (cells = rows[j][gEBT]("cell")).length;
-					while (k) {
-						arr2[--k] = cells[k][cellText] || "";
+					// By row:
+					for (i=0; row=rows[i]; i++) {
+						if (row.nodeName === "tr" && (cells = row.childNodes)) {
+							arr[a++] = arr2 = [];
+							a2 = 0;
+							
+							// By cell:
+							for (j=0; cell=cells[j]; j++) {
+								if ((tag = cell.nodeName) === "td" || tag === "th") {
+									arr2[a2++] = cell[cellText] || "";
+								}
+							}
+						}
 					}
 				}
 			}
@@ -189,31 +215,30 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	Grid.prototype.convertData = function(data) {
-		var base, cols;
+		var base, cols, h, b, f;
 		
 		this.addSelectionColumn(data);
 		this.rawData = data.Body || [];
 		if ((base = data.Head || data.Body || data.Foot || null)) {
 			cols = this.columns = base[0].length;
-			while (cols) {
-				this.cellData.head[--cols] = [];
-				this.cellData.body[cols] = [];
-				this.cellData.foot[cols] = [];
-			}
+			h = this.cellData.head;
+			b = this.cellData.body;
+			f = this.cellData.foot;
+			while (cols) { h[--cols] = []; b[cols] = []; f[cols] = []; }
 			
 			cols = this.columns;
 			if (data.Head) {
-				this.convertDataItem(this.cellData.head, data.Head, "<DIV class='mgC mgHR mgR", cols, this.options.allowColumnResize);
+				this.convertDataItem(h, data.Head, "<DIV class='mgC mgHR mgR", cols, this.options.allowColumnResize);
 			} else {
 				this.css.rules[".mgHead"] = { display : "none" };
 			}
 			if (data.Body) {
-				this.convertDataItem(this.cellData.body, data.Body, "<DIV class='mgC mgBR mgR", cols, false);
+				this.convertDataItem(b, data.Body, "<DIV class='mgC mgBR mgR", cols, false);
 			} else {
 				this.css.rules[".mgBodyFixed"] = { display : "none" };
 			}
 			if (data.Foot) {
-				this.convertDataItem(this.cellData.foot, data.Foot, "<DIV class='mgC mgFR mgR", cols, false);
+				this.convertDataItem(f, data.Foot, "<DIV class='mgC mgFR mgR", cols, false);
 			} else {
 				this.css.rules[".mgFoot"] = { display : "none" };
 			}
@@ -246,10 +271,12 @@
 		var html, rows, i;
 		
 		if (this.options.showSelectionColumn) {
-			this.options.fixedCols++;
 			this.options.colBGColors.unshift(this.options.colBGColors[0] || "");
 			this.options.colSortTypes.unshift("none");
 			this.options.colAlign.unshift("left");
+			if (!this.usesTouch) {
+				this.options.fixedCols++;
+			}
 			
 			if ((rows = data.Head) && (i = rows.length)) {
 				while (i) { rows[--i].unshift(""); }
@@ -268,9 +295,9 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	Grid.prototype.generateGrid = function() {
-		this.hasHead = (this.cellData.head.length > 0 && this.cellData.head[0].length > 0);
-		this.hasBody = (this.cellData.body.length > 0 && this.cellData.body[0].length > 0);
-		this.hasFoot = (this.cellData.foot.length > 0 && this.cellData.foot[0].length > 0);
+		this.hasHead = ((this.cellData.head[0] || []).length > 0);
+		this.hasBody = ((this.cellData.body[0] || []).length > 0);
+		this.hasFoot = ((this.cellData.foot[0] || []).length > 0);
 		this.hasHeadOrFoot = (this.hasHead || this.hasFoot);
 		this.hasFixedCols = (this.options.fixedCols > 0);
 		
@@ -343,6 +370,10 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	Grid.prototype.displayGrid = function() {
+		var srcType = this.options.srcType, 
+		    srcData = this.options.srcData, 
+		    replace = false;
+		
 		// Setup scrolling:
 		this.lastScrollLeft = 0;
 		this.lastScrollTop = 0;
@@ -352,13 +383,19 @@
 		try {
 			this.css.sheet.parentNode.removeChild(this.css.sheet);
 		} catch (e) {
-			this.css.sheet = document.createElement("STYLE");
-			this.css.sheet.id = this.element.id + "SS";
+			(this.css.sheet = document.createElement("STYLE")).id = this.element.id + "SS";
 			this.css.sheet.type = "text/css";
 		}
 		
 		// Insert grid into DOM:
-		this.element.appendChild(this.docFrag);
+		if (srcType === "dom" && (srcData = (typeof(srcData) === "string") ? $(srcData) : srcData)) {
+			if ((replace = (this.element === srcData.parentNode))) {
+				this.element.replaceChild(this.docFrag, srcData);
+			}
+		}
+		if (!replace) {
+			this.element.appendChild(this.docFrag);
+		}
 		
 		// Align columns:
 		this.alignTimer = window.setTimeout(bind(this.alignColumns, this, [false]), 16);
@@ -498,7 +535,7 @@
 		if (!sheet.styleSheet) {
 			sheet.appendChild(doc.createTextNode(cssText.join("")));
 		}
-		if (!doc.getElementById(sheet.id)) {
+		if (!$(sheet.id)) {
 			(doc.head || doc.getElementsByTagName("head")[0]).appendChild(sheet);
 		}
 		if (sheet.styleSheet) {
@@ -569,8 +606,13 @@
 		if (event.button !== 2) {
 			if (this.options.allowColumnResize && targetClass.indexOf("mgRS") > -1) {
 				return this.initResizeColumn(event, target, targetClass);
-			} else if (this.options.allowClientSideSorting) {
-				this.sortColumn(target, targetClass);
+			} else if (this.hasBody && this.options.allowClientSideSorting) {
+				while (targetClass.indexOf("mgCl") === -1 && targetClass !== "mgHead") {
+					targetClass = (target = target.parentNode).className || "";
+				}
+				if (targetClass.indexOf("mgCl") > -1) {
+					this.sortColumn(parseInt(/mgCl(\d+)/.exec(targetClass)[1], 10));
+				}
 			}
 		}
 	};
@@ -636,44 +678,35 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.sortColumn = function(target, targetClass) {
-		var colIdx, colSortAs;
+	Grid.prototype.sortColumn = function(colIdx, sortAsc) {
+		var colIdx = (!isNaN(colIdx || -1)) ? colIdx || -1 : -1, 
+		    colSortAs = (colIdx > -1) ? this.options.colSortTypes[colIdx] || "string" : "none", 
+		    lastCol = this.lastSortedColumn;
 		
-		if (this.hasBody) {
-			while (targetClass.indexOf("mgCl") === -1 && targetClass !== "mgHead") {
-				targetClass = (target = target.parentNode).className || "";
-			}
-			if (targetClass.indexOf("mgCl") > -1) {
-				colIdx = parseInt(/mgCl(\d+)/.exec(targetClass)[1], 10);
-				colSortAs = this.options.colSortTypes[colIdx] || "string";
-				if (colSortAs !== "none") {
-					colSortAs = (colIdx === this.lastSortedColumn) ? "reverse" : colSortAs;
-					this.sortRawData(colIdx, colSortAs);
-				}
-			}
+		if (colSortAs !== "none") {
+			sortAsc = (sortAsc === undefined) ? ((colIdx === lastCol[0]) ? !lastCol[1] : true) : !!sortAsc;
+			this.sortRawData(colIdx, colSortAs, sortAsc);
 		}
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.sortRawData = function(colIdx, colSortAs) {
-		var rawData = this.rawData, 
+	Grid.prototype.sortRawData = function(colIdx, colSortAs, sortAsc) {
+		var selIndexes, ltVal, gtVal, i, 
+		    rawData = this.rawData, 
 		    newSelIndexes = [], 
 		    newIdxOrder = [], 
-		    that = this, 
-		    selIndexes, i;
+		    that = this;
 		
 		// Store prior index order:
 		i = rawData.length;
 		while (i) { rawData[--i].pIdx = i; }
 		
 		// Sort the body data by type:
-		if (colSortAs === "reverse") {
-			rawData.reverse();
-		} else {
-			rawData.sort(function(a, b) {
-				return that.getSortResult(colSortAs, colIdx, a[colIdx], b[colIdx]);
-			});
-		}
+		ltVal = (sortAsc) ? -1 : 1;
+		gtVal = (sortAsc) ? 1 : -1;
+		rawData.sort(function(a, b) {
+			return that.getSortResult(colSortAs, colIdx, ltVal, gtVal, a[colIdx], b[colIdx]);
+		});
 		
 		// Update the grid body HTML:
 		this.convertDataItem(this.cellData.body, rawData, "<DIV class='mgC mgBR mgR", this.columns, false);
@@ -683,20 +716,20 @@
 		i = rawData.length;
 		while (i) { newIdxOrder[--i] = rawData[i].pIdx; }
 		
-		// Fire sort event:
-		this.options.onColumnSort(newIdxOrder.concat(), colIdx, this.lastSortedColumn);
-		this.lastSortedColumn = colIdx;
-		
 		// Update selected row indexes if applicable:
 		if (this.options.allowSelections && (selIndexes = this.selectedIndexes.concat()).length) {
 			i = selIndexes.length;
 			while (i) { newSelIndexes[--i] = indexOf(newIdxOrder, selIndexes[i]); }
 			this.highlightRows((this.selectedIndexes = newSelIndexes), []);
 		}
+		
+		// Fire sort event:
+		this.options.onColumnSort(newIdxOrder.concat(), colIdx, this.lastSortedColumn[0]);
+		this.lastSortedColumn = [colIdx, sortAsc];
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.getSortResult = function(type, colIdx, a, b, keyA, keyB) {
+	Grid.prototype.getSortResult = function(type, colIdx, ltVal, gtVal, a, b, keyA, keyB) {
 		if (a === b) {
 			return 0;
 		}
@@ -714,7 +747,7 @@
 			                       (type === "custom") ? this.options.customSortCleaner(b, colIdx) : b;
 		}
 		
-		return (this.sortCache[keyA] < this.sortCache[keyB]) ? -1 : 1;
+		return (this.sortCache[keyA] < this.sortCache[keyB]) ? ltVal : gtVal;
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -770,17 +803,17 @@
 	Grid.prototype.selectRange = function(event) {
 		var event = event || window.event, 
 		    target = event.target || event.srcElement, 
-		    targetClass = target.className || "", 
-		    isCbSelect = (targetClass.indexOf("mgCb") > -1), 
-		    rowIdx;
+		    targetClass, isCtrlKeyLike, rowIdx;
 		
 		if (event.button !== 2 && this.options.allowSelections) {
+			targetClass = target.className || "";
 			while (targetClass.indexOf("mgBR") === -1 && targetClass !== "mgBody") {
 				targetClass = (target = target.parentNode).className || "";
 			}
 			if (targetClass.indexOf("mgBR") > -1) {
 				rowIdx = parseInt(/mgR(\d+)/.exec(targetClass)[1], 10);
-				this.updateSelectedIndexes(rowIdx, event.ctrlKey || isCbSelect, event.shiftKey);
+				isCtrlKeyLike = this.usesTouch || (target.parentNode.className.indexOf("mgCl0") > -1);
+				this.updateSelectedIndexes(rowIdx, event.ctrlKey || isCtrlKeyLike, event.shiftKey);
 			}
 		}
 	};
@@ -840,7 +873,9 @@
 			i = toSelect.length;
 			while (i) { rows[toSelect[--i]].style.backgroundColor = bgColor; }
 		}
-		if (this.options.showSelectionColumn && (inputs = nodes[0][0].getElementsByTagName("INPUT"))) {
+		if (this.options.showSelectionColumn) {
+			inputs = nodes[(!this.usesTouch) ? 0 : 1][0].getElementsByTagName("INPUT");
+			
 			i = toRemove.length;
 			while (i) { inputs[toRemove[--i]].checked = false; }
 			
@@ -935,13 +970,9 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	var addEvent = function(elem, type, listener) {
-		if (elem.addEventListener) {
-			elem.addEventListener(type, listener, false);
-		} else {
-			elem.attachEvent("on" + type, listener);
-		}
-	};
+	var addEvent = (document.addEventListener) ? 
+	  function(elem, type, listener) { elem.addEventListener(type, listener, false); } : 
+	  function(elem, type, listener) { elem.attachEvent("on" + type, listener); };
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	var stopEvent = function(event) {
@@ -956,32 +987,30 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	var removeEvent = function(elem, type, listener) {
-		if (elem.removeEventListener) {
-			elem.removeEventListener(type, listener, false);
-		} else {
-			elem.detachEvent("on" + type, listener);
-		}
-	};
+	var removeEvent = (document.addEventListener) ? 
+	  function(elem, type, listener) { elem.removeEventListener(type, listener, false); } : 
+	  function(elem, type, listener) { elem.detachEvent("on" + type, listener); };
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	var getEventPositions = function(event, type) {
-		var doc, elem;
+		var pageX = event.pageX, 
+		    pageY = event.pageY, 
+		    doc, elem;
 		
 		// Client position:
 		if (type === "client") {
-			if (event.pageX !== undefined || event.pageY !== undefined) {
-				return { x : event.pageX - window.pageXOffset, y : event.pageY - window.pageYOffset };
+			if (pageX !== undefined || pageY !== undefined) {
+				return { x : pageX - window.pageXOffset, y : pageY - window.pageYOffset };
 			}
 			return { x : event.clientX, y : event.clientY };
 		}
 		
 		// Page position:
-		if (event.pageX === undefined || event.pageY === undefined) {
+		if (pageX === undefined || pageY === undefined) {
 			elem = ((doc = document).documentElement.scrollLeft !== undefined) ? doc.documentElement : doc.body;
 			return { x : event.clientX + elem.scrollLeft, y : event.clientY + elem.scrollTop };
 		}
-		return { x : event.pageX, y : event.pageY };
+		return { x : pageX, y : pageY };
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -1001,15 +1030,11 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	var indexOf = function(arr, item) {
-		if (arr.indexOf) {
-			return arr.indexOf(item);
-		}
-		for (var i=0, len=arr.length; i<len; i++) {
-			if (arr[i] === item) { return i; }
-		}
-		return -1;
-	};
+	var indexOf = ([].indexOf) ? 
+	  function(arr, item) { return arr.indexOf(item); } : 
+	  function(arr, item) {
+	  	for (var i=0, len=arr.length; i<len; i++) { if (arr[i] === item) { return i; } } return -1;
+	  };
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	var clearTextSelections = (window.getSelection) ? 
@@ -1018,7 +1043,8 @@
 		function() { return false; };
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	var msie = getIEVersion();
+	var $ = function(elemId) { return document.getElementById(elemId); }, 
+	    msie = getIEVersion();
 	
 	// Expose:
 	window.Grid = Grid;

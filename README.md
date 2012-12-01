@@ -18,7 +18,7 @@ Features
 * Column sorting
 * Grid resizing
 * Row selection (singular and multi-select)
-* Accepts JSON and XML as input
+* Accepts JSON or XML as input or retrieves from DOM
 * Tablet friendly
 
 Installation
@@ -40,7 +40,7 @@ Initialize the grid using Javascript:
           Head : [["Header 1", "Header 2", "Header 3"]], 
           Body : [["Row 1, Cell 1", "Row 1, Cell 2", "Row 1, Cell 3"], 
                   ["Row 2, Cell 1", "Row 2, Cell 2", "Row 2, Cell 3"], 
-                  ["Row 3, Cell 1", "Row 3, Cell 2", "Row 3, Cell <strong>3</strong>"]]
+                  ["Row 3, Cell 1", "Row 3, Cell 2", "Row 3, Cell <em>3</em>"]]
         };
     
     new Grid("myGrid", {
@@ -55,18 +55,18 @@ Initialize the grid using Javascript:
       fixedCols : 1
     });
 
-Grid data can also be in XML format:
+Grid data can also be in XML format or retrieved from the DOM:
 
-    <grid>
-      <head>
-        <row><cell>Header 1</cell><cell>Header 2</cell><cell>Header 3</cell></row>
-      </head>
-      <body>
-        <row><cell>Row 1, Cell 1</cell><cell>Row 1, Cell 2</cell><cell>Row 1, Cell 3</cell></row>
-        <row><cell>Row 2, Cell 1</cell><cell>Row 2, Cell 2</cell><cell>Row 2, Cell 3</cell></row>
-        <row><cell>Row 3, Cell 1</cell><cell>Row 3, Cell 2</cell><cell>Row 3, Cell &lt;strong&gt;3&lt;/strong&gt;</cell></row>
-      </body>
-    </grid>
+    <table id="myGridTable">
+      <thead>
+        <tr><td>Header 1</td><td>Header 2</td><td>Header 3</td></row>
+      </thead>
+      <tbody>
+        <tr><td>Row 1, Cell 1</td><td>Row 1, Cell 2</td><td>Row 1, Cell 3</td></tr>
+        <tr><td>Row 2, Cell 1</td><td>Row 2, Cell 2</td><td>Row 2, Cell 3</td></tr>
+        <tr><td>Row 3, Cell 1</td><td>Row 3, Cell 2</td><td>Row 3, Cell <em>3</em></td></tr> <!-- In XML the <em> tags would be escaped -->
+      </tbody>
+    </table>
 
 See the demo source code for a full example.
 
@@ -74,11 +74,13 @@ Options
 -------
 
 **srcType**  
-String. Must be either `"json"` or `"xml"`.  
+String. Must be either `"dom"`, `"json"` or `"xml"`. For best performance use `"json"`. If using `"dom"`, make sure to wrap your table rows 
+in `<thead>`, `<tbody>` and `<tfoot>` elements.  
 Default is `""`.
 
 **srcData**  
-Variable. If `srcType` is `"json"`, a json string or object is accepted. If `srcType` is `"xml"`, an xml string or document is accepted.  
+Variable. If `srcType` is `"dom"`, an HTMLTableElement or string ID for an HTMLTableElement is accepted. If `srcType` is `"json"`, a json 
+string or object is accepted. If `srcType` is `"xml"`, an xml string or document is accepted.  
 Default is `""`.
 
 **allowGridResize**  
@@ -110,7 +112,8 @@ Default is `false`.
 **onColumnSort**
 Function. If `allowClientSideSorting` is `true`, this function will be called immediately after a user sorts a column. Returned 
 in `arguments` are an array of the new row indexes order with their prior index order values, the sorted column index and the prior 
-sorted column index if it exists.  
+sorted column index if it exists. To sort a column programmatically, call the 
+`myGridInstanceObject.sortColumn((int) columnIndex, (boolean) sortAscending)` method.  
 Default is a function that does nothing.
 
 **onResizeGrid**  
@@ -148,7 +151,7 @@ Default is `false`.
 
 **fixedCols**  
 Integer. The number of columns to fix starting from the leftmost column. If `showSelectionColumn` is `true` this option will 
-automatically increment by 1.  
+automatically increment by 1. Disabled automatically in touch devices.  
 Default is `0`.
 
 **selectedBgColor**  

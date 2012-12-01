@@ -13,6 +13,7 @@
 	white-space : nowrap;
 	overflow : hidden;
 	cursor : default;
+	direction : ltr;
 	-webkit-tap-highlight-color : transparent;
 }
 .mgBaseResize {
