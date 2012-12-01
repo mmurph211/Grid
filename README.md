@@ -59,7 +59,7 @@ Grid data can also be in XML format or retrieved from the DOM:
 
     <table id="myGridTable">
       <thead>
-        <tr><td>Header 1</td><td>Header 2</td><td>Header 3</td></row>
+        <tr><td>Header 1</td><td>Header 2</td><td>Header 3</td></tr>
       </thead>
       <tbody>
         <tr><td>Row 1, Cell 1</td><td>Row 1, Cell 2</td><td>Row 1, Cell 3</td></tr>
