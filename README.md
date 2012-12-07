@@ -30,7 +30,7 @@ directory. You can change some of the styling in Grid.css to suit your needs.
 Usage
 -----
 
-Create a `DIV` element with an `ID` and preferably a fixed width and height:
+Create a `div` element with an `id` attribute and preferably a fixed width and height:
 
     <div id="myGrid" style="width:800px;height:360px;"></div>
 

@@ -919,10 +919,9 @@
 	//
 	//////////////////////////////////////////////////////////////////////////////////
 	var getIEVersion = function() {
-		var nav = navigator, 
-		    version;
+		var nav, version;
 		
-		if (nav.appName === "Microsoft Internet Explorer") {
+		if ((nav = navigator).appName === "Microsoft Internet Explorer") {
 			if (new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})").exec(nav.userAgent)) {
 				version = parseFloat(RegExp.$1);
 			}
@@ -932,10 +931,9 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	var parseJSON = function(source) {
-		var sourceType = typeof(source), 
-		    json, win;
+		var sourceType, json, win;
 		
-		if (sourceType === "string") {
+		if ((sourceType = typeof(source)) === "string") {
 			if (((win = window).JSON || {}).parse) {
 				json = win.JSON.parse(source);
 			} else {
@@ -948,10 +946,9 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	var parseXML = function(source) {
-		var sourceType = typeof(source), 
-		    dE, xml;
+		var sourceType, dE, xml;
 		
-		if (sourceType === "string") {
+		if ((sourceType = typeof(source)) === "string") {
 			if (window.DOMParser) {
 				xml = new DOMParser().parseFromString(source, "text/xml");
 			} else if (window.ActiveXObject) {
@@ -1020,9 +1017,7 @@
 		
 		return function() {
 			if (a || arguments.length) {
-				for (var i=0, arg; arg=arguments[i]; i++) {
-					args[a+i] = arg;
-				}
+				for (var i=0, arg; arg=arguments[i]; i++) { args[a+i] = arg; }
 				return func.apply(that, args);
 			}
 			return func.call(that);
