@@ -803,7 +803,7 @@
 	Grid.prototype.selectRange = function(event) {
 		var event = event || window.event, 
 		    target = event.target || event.srcElement, 
-		    targetClass, isCtrlKeyLike, rowIdx;
+		    targetClass, isSelCol, isCtrlKeyLike, update, rowIdx;
 		
 		if (event.button !== 2 && this.options.allowSelections) {
 			targetClass = target.className || "";
@@ -811,9 +811,18 @@
 				targetClass = (target = target.parentNode).className || "";
 			}
 			if (targetClass.indexOf("mgBR") > -1) {
+				update = true;
 				rowIdx = parseInt(/mgR(\d+)/.exec(targetClass)[1], 10);
-				isCtrlKeyLike = this.usesTouch || (target.parentNode.className.indexOf("mgCl0") > -1);
-				this.updateSelectedIndexes(rowIdx, event.ctrlKey || isCtrlKeyLike, event.shiftKey);
+				targetClass = (target = target.parentNode).className || "";
+				isSelCol = (this.options.showSelectionColumn && (targetClass.indexOf("mgCl0") > -1));
+				isCtrlKeyLike = this.usesTouch || isSelCol;
+				
+				if (this.usesTouch && this.options.showSelectionColumn && (update = isSelCol)) {
+					stopEvent(event);
+				}
+				if (update) {
+					this.updateSelectedIndexes(rowIdx, event.ctrlKey || isCtrlKeyLike, event.shiftKey);
+				}
 			}
 		}
 	};
