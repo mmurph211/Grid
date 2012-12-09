@@ -585,7 +585,7 @@
 			this.parentDimensions = { x : newWidth, y : newHeight };
 			this.syncScrolls();
 			clearTextSelections();
-			this.options.onResizeGrid(newWidth, newHeight);
+			this.options.onResizeGrid.apply(this, [newWidth, newHeight]);
 		}
 	};
 	
@@ -593,7 +593,7 @@
 	Grid.prototype.endResizeGrid = function(event) {
 		removeEvent(document, this.moveEvt, this.tmp.boundMoveEvt);
 		removeEvent(document, this.endEvt, this.tmp.boundEndEvt);
-		this.options.onResizeGridEnd(this.parentDimensions.x, this.parentDimensions.y);
+		this.options.onResizeGridEnd.apply(this, [this.parentDimensions.x, this.parentDimensions.y]);
 		this.tmp = undefined;
 	};
 	
@@ -656,7 +656,7 @@
 		}
 		
 		clearTextSelections();
-		this.options.onResizeColumn(this.tmp.colIdx, newWidth);
+		this.options.onResizeColumn.apply(this, [this.tmp.colIdx, newWidth]);
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -673,7 +673,7 @@
 		this.columnWidths[colIdx] = newWidth;
 		this.setRules();
 		this.syncScrolls();
-		this.options.onResizeColumnEnd(colIdx, newWidth);
+		this.options.onResizeColumnEnd.apply(this, [colIdx, newWidth]);
 		this.tmp = undefined;
 	};
 	
@@ -724,7 +724,7 @@
 		}
 		
 		// Fire sort event:
-		this.options.onColumnSort(newIdxOrder.concat(), colIdx, this.lastSortedColumn[0]);
+		this.options.onColumnSort.apply(this, [newIdxOrder.concat(), colIdx, this.lastSortedColumn[0]]);
 		this.lastSortedColumn = [colIdx, sortAsc];
 	};
 	
@@ -768,7 +768,7 @@
 				toRemove = selIndexes.concat();
 				this.selectedIndexes = [];
 				this.highlightRows(toSelect, toRemove);
-				this.options.onRowSelect(toSelect, toRemove, -1);
+				this.options.onRowSelect.apply(this, [toSelect, toRemove, -1]);
 			}
 		}
 	};
@@ -795,7 +795,7 @@
 			
 			this.selectedIndexes = selIndexes.concat(toSelect);
 			this.highlightRows(toSelect, toRemove);
-			this.options.onRowSelect(toSelect, toRemove, -1);
+			this.options.onRowSelect.apply(this, [toSelect, toRemove, -1]);
 		}
 	};
 	
@@ -860,7 +860,7 @@
 		if (ctrlPressed || shiftPressed) {
 			(!msie) ? clearTextSelections() : window.setTimeout(clearTextSelections, 25);
 		}
-		this.options.onRowSelect(toSelect, toRemove, rowIdx);
+		this.options.onRowSelect.apply(this, [toSelect, toRemove, rowIdx]);
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
