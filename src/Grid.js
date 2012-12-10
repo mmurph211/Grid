@@ -9,7 +9,7 @@
 	
 	var Grid = function(element, options) {
 		if ((this.element = (typeof(element) === "string") ? $(element) : element)) {
-			this.css = { idRulePrefix : "", sheet : null, rules : {} };
+			this.css = { idRulePrefix : "#" + this.element.id + " ", sheet : null, rules : {} };
 			this.columns = 0;
 			this.columnWidths = [];
 			this.cellData = { head : [], body : [], foot : [] };
@@ -22,49 +22,57 @@
 			this.startEvt = (this.usesTouch) ? "touchstart" : "mousedown";
 			this.moveEvt = (this.usesTouch) ? "touchmove" : "mousemove";
 			this.endEvt = (this.usesTouch) ? "touchend" : "mouseup";
-			this.options = {
-				srcType : "", // "dom", "json", "xml"
-				srcData : "", 
-				allowGridResize : false, 
-				allowColumnResize : false, 
-				allowClientSideSorting : false, 
-				allowSelections : false, 
-				allowMultipleSelections : false, 
-				showSelectionColumn : false, 
-				onColumnSort : this.nothing, 
-				onResizeGrid : this.nothing, 
-				onResizeGridEnd : this.nothing, 
-				onResizeColumn : this.nothing, 
-				onResizeColumnEnd : this.nothing, 
-				onRowSelect : this.nothing, 
-				supportMultipleGridsInView : false, 
-				fixedCols : 0, 
-				selectedBgColor : "#eaf1f7", 
-				fixedSelectedBgColor : "#dce7f0", 
-				colAlign : [], // "left", "center", "right"
-				colBGColors : [], 
-				colSortTypes : [], // "string", "number", "date", "custom", "none"
-				customSortCleaner : null
-			};
-			
-			if (options) {
-				for (var option in this.options) {
-					if (options[option] !== undefined) {
-						this.options[option] = options[option];
-					}
-				}
-			}
-			
-			this.options.allowColumnResize = this.options.allowColumnResize && !this.usesTouch;
-			this.options.allowMultipleSelections = this.options.allowMultipleSelections && this.options.allowSelections;
-			this.options.showSelectionColumn = this.options.showSelectionColumn && this.options.allowSelections;
-			this.options.fixedCols = (!this.usesTouch) ? this.options.fixedCols : 0;
+			this.setOptions(options);
 			this.init();
 		}
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	Grid.prototype.nothing = function(){};
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	Grid.prototype.setOptions = function(options) {
+		var hasOwnProp = Object.prototype.hasOwnProperty, 
+		    option;
+		
+		this.options = {
+			srcType : "", // "dom", "json", "xml"
+			srcData : "", 
+			allowGridResize : false, 
+			allowColumnResize : false, 
+			allowClientSideSorting : false, 
+			allowSelections : false, 
+			allowMultipleSelections : false, 
+			showSelectionColumn : false, 
+			onColumnSort : this.nothing, 
+			onResizeGrid : this.nothing, 
+			onResizeGridEnd : this.nothing, 
+			onResizeColumn : this.nothing, 
+			onResizeColumnEnd : this.nothing, 
+			onRowSelect : this.nothing, 
+			supportMultipleGridsInView : false, 
+			fixedCols : 0, 
+			selectedBgColor : "#eaf1f7", 
+			fixedSelectedBgColor : "#dce7f0", 
+			colAlign : [], // "left", "center", "right"
+			colBGColors : [], 
+			colSortTypes : [], // "string", "number", "date", "custom", "none"
+			customSortCleaner : null
+		};
+		
+		if (options) {
+			for (option in this.options) {
+				if (hasOwnProp.call(this.options, option) && options[option] !== undefined) {
+					this.options[option] = options[option];
+				}
+			}
+		}
+		
+		this.options.allowColumnResize = this.options.allowColumnResize && !this.usesTouch;
+		this.options.allowMultipleSelections = this.options.allowMultipleSelections && this.options.allowSelections;
+		this.options.showSelectionColumn = this.options.showSelectionColumn && this.options.allowSelections;
+		this.options.fixedCols = (!this.usesTouch) ? this.options.fixedCols : 0;
+	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	Grid.prototype.init = function() {
@@ -513,23 +521,24 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	Grid.prototype.setRules = function() {
-		var idRulePrefix = "", 
-		    sheet = this.css.sheet, 
+		var idRulePrefix = (this.options.supportMultipleGridsInView) ? this.css.idRulePrefix : "", 
+		    hasOwnProp = Object.prototype.hasOwnProperty, 
 		    rules = this.css.rules, 
-		    doc = document, 
-		    cssText = [], 
-		    i = 0;
+		    sheet = this.css.sheet, 
+		    cssText = [], c = 0, 
+		    rule, props, prop, 
+		    doc = document;
 		
-		if (this.options.supportMultipleGridsInView) {
-			idRulePrefix = this.css.idRulePrefix || "#" + this.element.id + " ";
-		}
-		
-		for (var rule in rules) {
-			cssText[i++] = idRulePrefix + rule + "{";
-			for (var prop in rules[rule]) {
-				cssText[i++] = prop + ":" + rules[rule][prop] + ";";
+		for (rule in rules) {
+			if (hasOwnProp.call(rules, rule) && (props = rules[rule])) {
+				cssText[c++] = idRulePrefix + rule + "{";
+				for (prop in props) {
+					if (hasOwnProp.call(props, prop)) {
+						cssText[c++] = prop + ":" + props[prop] + ";";
+					}
+				}
+				cssText[c++] = "} ";
 			}
-			cssText[i++] = "} ";
 		}
 		
 		if (!sheet.styleSheet) {
