@@ -7,6 +7,7 @@
 (function(window, document, undefined) {
 	"use strict";
 	
+	var GridProto;
 	var Grid = function(element, options) {
 		if ((this.element = (typeof(element) === "string") ? $(element) : element)) {
 			this.css = { idRulePrefix : "#" + this.element.id + " ", sheet : null, rules : {} };
@@ -28,10 +29,10 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.nothing = function(){};
+	(GridProto = Grid.prototype).nothing = function(){};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.setOptions = function(options) {
+	GridProto.setOptions = function(options) {
 		var hasOwnProp = Object.prototype.hasOwnProperty, 
 		    option;
 		
@@ -75,7 +76,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.init = function() {
+	GridProto.init = function() {
 		var srcType = this.options.srcType, 
 		    srcData = this.options.srcData, 
 		    data;
@@ -101,7 +102,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.generateSkeleton = function() {
+	GridProto.generateSkeleton = function() {
 		var doc = document, 
 		    elems = [["base", "mgBase", "docFrag"], 
 		             ["head", "mgHead", "base"], 
@@ -129,7 +130,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.addEvents = function() {
+	GridProto.addEvents = function() {
 		var wheelEvent;
 		
 		// Simulate mouse scrolling over non-scrollable content:
@@ -164,7 +165,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.convertDomDataToJsonData = function(data) {
+	GridProto.convertDomDataToJsonData = function(data) {
 		var sections = { "thead" : "Head", "tbody" : "Body", "tfoot" : "Foot" }, 
 		    section, rows, row, cells, arr, arr2, i, j, k, 
 		    json = {};
@@ -186,7 +187,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.convertXmlDataToJsonData = function(data) {
+	GridProto.convertXmlDataToJsonData = function(data) {
 		var sections = { "thead" : "Head", "tbody" : "Body", "tfoot" : "Foot" }, 
 		    cellText = (msie < 9) ? "text" : "textContent", 
 		    nodes, node, section, rows, row, cells, cell, tag, n, i, j, 
@@ -222,7 +223,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.convertData = function(data) {
+	GridProto.convertData = function(data) {
 		var base, cols, h, b, f;
 		
 		this.addSelectionColumn(data);
@@ -254,7 +255,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.convertDataItem = function(arr, rows, rowClass, cols, allowColResize) {
+	GridProto.convertDataItem = function(arr, rows, rowClass, cols, allowColResize) {
 		var rowIdx = rows.length, 
 		    rowDiv, row, colIdx;
 		
@@ -275,7 +276,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.addSelectionColumn = function(data) {
+	GridProto.addSelectionColumn = function(data) {
 		var html, rows, i;
 		
 		if (this.options.showSelectionColumn) {
@@ -302,7 +303,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.generateGrid = function() {
+	GridProto.generateGrid = function() {
 		this.hasHead = ((this.cellData.head[0] || []).length > 0);
 		this.hasBody = ((this.cellData.body[0] || []).length > 0);
 		this.hasFoot = ((this.cellData.foot[0] || []).length > 0);
@@ -315,7 +316,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.generateGridHead = function() {
+	GridProto.generateGridHead = function() {
 		var hHTML;
 		
 		if (this.hasHead) {
@@ -328,7 +329,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.generateGridBody = function() {
+	GridProto.generateGridBody = function() {
 		var bHTML;
 		
 		if (this.hasBody) {
@@ -343,7 +344,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.generateGridFoot = function() {
+	GridProto.generateGridFoot = function() {
 		var fHTML;
 		
 		if (this.hasFoot) {
@@ -356,7 +357,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.generateGridSection = function(cols) {
+	GridProto.generateGridSection = function(cols) {
 		var replaceFunc = function($1, $2) { return cols[parseInt($2, 10)].join("</DIV>"); }, 
 		    replaceRgx = /@(\d+)@/g, 
 		    fixedCols = this.options.fixedCols, 
@@ -377,7 +378,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.displayGrid = function() {
+	GridProto.displayGrid = function() {
 		var srcType = this.options.srcType, 
 		    srcData = this.options.srcData, 
 		    replace = false;
@@ -406,11 +407,11 @@
 		}
 		
 		// Align columns:
-		this.alignTimer = window.setTimeout(bind(this.alignColumns, this, [false]), 16);
+		this.alignTimer = window.setTimeout(bind(this.alignColumns, this, false), 16);
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.alignColumns = function(reAlign) {
+	GridProto.alignColumns = function(reAlign) {
 		var sNodes = [this.headStatic.children || [], this.bodyStatic.children || [], this.footStatic.children || []], 
 		    fNodes = [this.headFixed.children || [], this.bodyFixed2.children || [], this.footFixed.children || []], 
 		    allowColumnResize = this.options.allowColumnResize, 
@@ -451,7 +452,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.computeBaseStyles = function() {
+	GridProto.computeBaseStyles = function() {
 		var rules = this.css.rules, 
 		    headHeight = (this.hasHead) ? this.head.offsetHeight : 0, 
 		    footHeight = (this.hasFoot) ? this.foot.offsetHeight : 0, 
@@ -483,7 +484,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.syncScrolls = function(event) {
+	GridProto.syncScrolls = function(event) {
 		var sL = (this.hasHeadOrFoot) ? this.body.scrollLeft : 0, 
 		    sT = (this.hasFixedCols) ? this.body.scrollTop : 0;
 		
@@ -503,7 +504,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.simulateMouseScroll = function(event) {
+	GridProto.simulateMouseScroll = function(event) {
 		var event = event || window.event, 
 		    deltaY = 0;
 		
@@ -520,7 +521,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.setRules = function() {
+	GridProto.setRules = function() {
 		var idRulePrefix = (this.options.supportMultipleGridsInView) ? this.css.idRulePrefix : "", 
 		    hasOwnProp = Object.prototype.hasOwnProperty, 
 		    rules = this.css.rules, 
@@ -553,7 +554,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.initResizeGrid = function(event) {
+	GridProto.initResizeGrid = function(event) {
 		var event = event || window.event, 
 		    pagePos;
 		
@@ -577,7 +578,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.resizeGrid = function(event) {
+	GridProto.resizeGrid = function(event) {
 		var pagePos, xDif, yDif, newWidth, newHeight, elemStyle;
 		
 		if ((this.tmp.throttle++) & 1) {
@@ -599,7 +600,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.endResizeGrid = function(event) {
+	GridProto.endResizeGrid = function(event) {
 		removeEvent(document, this.moveEvt, this.tmp.boundMoveEvt);
 		removeEvent(document, this.endEvt, this.tmp.boundEndEvt);
 		this.options.onResizeGridEnd.apply(this, [this.parentDimensions.x, this.parentDimensions.y]);
@@ -607,7 +608,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.delegateHeaderEvent = function(event) {
+	GridProto.delegateHeaderEvent = function(event) {
 		var event = event || window.event, 
 		    target = event.target || event.srcElement, 
 		    targetClass = target.className || "";
@@ -627,7 +628,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.initResizeColumn = function(event, target, targetClass) {
+	GridProto.initResizeColumn = function(event, target, targetClass) {
 		var colIdx = parseInt(targetClass.replace(/mgRS/g, ""), 10), 
 		    doc = document;
 		
@@ -652,7 +653,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.resizeColumn = function(event) {
+	GridProto.resizeColumn = function(event) {
 		var clientX = getEventPositions(event || window.event, "client").x, 
 		    xDif = clientX - this.tmp.origX, 
 		    newWidth = Math.max(15, (xDif > 0) ? this.tmp.origWidth + xDif : this.tmp.origWidth - Math.abs(xDif)), 
@@ -669,7 +670,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.endResizeColumn = function(event) {
+	GridProto.endResizeColumn = function(event) {
 		var newWidth = this.tmp.newWidth || this.tmp.origWidth, 
 		    colIdx = this.tmp.colIdx;
 		
@@ -687,7 +688,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.sortColumn = function(colIdx, sortAsc) {
+	GridProto.sortColumn = function(colIdx, sortAsc) {
 		var colIdx = (!isNaN(colIdx || -1)) ? colIdx || -1 : -1, 
 		    colSortAs = (colIdx > -1) ? this.options.colSortTypes[colIdx] || "string" : "none", 
 		    lastCol = this.lastSortedColumn;
@@ -699,7 +700,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.sortRawData = function(colIdx, colSortAs, sortAsc) {
+	GridProto.sortRawData = function(colIdx, colSortAs, sortAsc) {
 		var selIndexes, ltVal, gtVal, i, 
 		    rawData = this.rawData, 
 		    newSelIndexes = [], 
@@ -738,7 +739,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.getSortResult = function(type, colIdx, ltVal, gtVal, a, b, keyA, keyB) {
+	GridProto.getSortResult = function(type, colIdx, ltVal, gtVal, a, b, keyA, keyB) {
 		if (a === b) {
 			return 0;
 		}
@@ -760,7 +761,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.toggleSelectAll = function(toggle) {
+	GridProto.toggleSelectAll = function(toggle) {
 		var selIndexes = this.selectedIndexes, 
 		    toSelect = [], toRemove = [], 
 		    i;
@@ -783,7 +784,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.selectIndexes = function(rowIndexes) {
+	GridProto.selectIndexes = function(rowIndexes) {
 		var selIndexes = this.selectedIndexes, 
 		    toSelect = [], toRemove = [], 
 		    i = rowIndexes.length, 
@@ -809,7 +810,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.selectRange = function(event) {
+	GridProto.selectRange = function(event) {
 		var event = event || window.event, 
 		    target = event.target || event.srcElement, 
 		    targetClass, isSelCol, isCtrlKeyLike, update, rowIdx;
@@ -837,7 +838,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.updateSelectedIndexes = function(rowIdx, ctrlPressed, shiftPressed) {
+	GridProto.updateSelectedIndexes = function(rowIdx, ctrlPressed, shiftPressed) {
 		var selIndexes = this.selectedIndexes.concat(), 
 		    rowIdxSelected = (indexOf(selIndexes, rowIdx) > -1), 
 		    toSelect = [], toRemove = [], 
@@ -873,7 +874,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.highlightRows = function(toSelect, toRemove) {
+	GridProto.highlightRows = function(toSelect, toRemove) {
 		var nodes = [this.bodyFixed2.children, this.bodyStatic.children], 
 		    fixedSelBgColor = this.options.fixedSelectedBgColor, 
 		    selBgColor = this.options.selectedBgColor, 
@@ -903,7 +904,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.preventSelectionInputStateChange = function(event) {
+	GridProto.preventSelectionInputStateChange = function(event) {
 		var event = event || window.event, 
 		    target = event.target || event.srcElement, 
 		    targetClass = target.className || "", 
@@ -924,7 +925,7 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	Grid.prototype.cleanUp = function() {
+	GridProto.cleanUp = function() {
 		this.alignTimer = (this.alignTimer) ? window.clearTimeout(this.alignTimer) : null;
 		this.element.innerHTML = "";
 		try { this.css.sheet.parentNode.removeChild(this.css.sheet); } catch (e) {}
@@ -1029,17 +1030,9 @@
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	var bind = function(func, that, args) {
-		var args = [].concat(args || []), 
-		    a = args.length;
-		
-		return function() {
-			if (a || arguments.length) {
-				for (var i=0, arg; arg=arguments[i]; i++) { args[a+i] = arg; }
-				return func.apply(that, args);
-			}
-			return func.call(that);
-		};
+	var bind = function(func, that) {
+		var a = slice.call(arguments, 2);
+		return function() { return func.apply(that, a.concat(slice.call(arguments))); };
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -1057,6 +1050,7 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	var $ = function(elemId) { return document.getElementById(elemId); }, 
+	    slice = Array.prototype.slice, 
 	    msie = getIEVersion();
 	
 	// Expose:

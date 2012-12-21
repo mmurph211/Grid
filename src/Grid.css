@@ -175,3 +175,9 @@
 .mgRd {
 	margin-top : -2px;
 }
+@media print {
+	/* Print overrides */
+	.mgBase, .mgHead, .mgBody, .mgFoot { overflow : visible; }
+	.mgHeadStatic, .mgFootStatic { margin-left : 0px !important; }
+	.mgBodyFixed2 { margin-top : 0px !important; }
+}
