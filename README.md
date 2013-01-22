@@ -145,7 +145,7 @@ call the `myGridInstanceObject.selectIndexes(arrayOfRowIndexes)` method.
 Default is a function that does nothing.
 
 **onLoad**  
-Function. This function will be called after the grid finishes loading. No `arguments` are returned.  
+Function. This function will be called after the grid finishes loading. No arguments are returned.  
 Default is a function that does nothing.
 
 **supportMultipleGridsInView**  
