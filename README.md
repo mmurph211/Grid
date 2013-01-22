@@ -144,6 +144,10 @@ select or unselect all rows, call the `myGridInstanceObject.toggleSelectAll(bool
 call the `myGridInstanceObject.selectIndexes(arrayOfRowIndexes)` method.  
 Default is a function that does nothing.
 
+**onLoad**  
+Function. This function will be called after the grid finishes loading. No `arguments` are returned.  
+Default is a function that does nothing.
+
 **supportMultipleGridsInView**  
 Boolean. Whether or not the grid code should support multiple grids in the same window. By default this is set to `false` for 
 performance gain in CSS selectors.  

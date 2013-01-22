@@ -51,6 +51,7 @@
 			onResizeColumn : this.nothing, 
 			onResizeColumnEnd : this.nothing, 
 			onRowSelect : this.nothing, 
+			onLoad : this.nothing, 
 			supportMultipleGridsInView : false, 
 			fixedCols : 0, 
 			selectedBgColor : "#eaf1f7", 
@@ -104,17 +105,17 @@
 	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.generateSkeleton = function() {
 		var doc = document, 
-		    elems = [["base", "mgBase", "docFrag"], 
-		             ["head", "mgHead", "base"], 
-		             ["headFixed", "mgHeadFixed", "head"], 
-		             ["headStatic", "mgHeadStatic", "head"], 
-		             ["foot", "mgFoot", "base"], 
-		             ["footFixed", "mgFootFixed", "foot"], 
-		             ["footStatic", "mgFootStatic", "foot"], 
-		             ["body", "mgBody", "base"], 
-		             ["bodyFixed", "mgBodyFixed", "body"], 
-		             ["bodyFixed2", "mgBodyFixed2", "bodyFixed"], 
-		             ["bodyStatic", "mgBodyStatic", "body"]];
+		    elems = [["base", "g_Base", "docFrag"], 
+		             ["head", "g_Head", "base"], 
+		             ["headFixed", "g_HeadFixed", "head"], 
+		             ["headStatic", "g_HeadStatic", "head"], 
+		             ["foot", "g_Foot", "base"], 
+		             ["footFixed", "g_FootFixed", "foot"], 
+		             ["footStatic", "g_FootStatic", "foot"], 
+		             ["body", "g_Body", "base"], 
+		             ["bodyFixed", "g_BodyFixed", "body"], 
+		             ["bodyFixed2", "g_BodyFixed2", "bodyFixed"], 
+		             ["bodyStatic", "g_BodyStatic", "body"]];
 		
 		this.parentDimensions = { x : this.element.offsetWidth, y : this.element.offsetHeight };
 		this.docFrag = doc.createDocumentFragment();
@@ -124,7 +125,7 @@
 		}
 		
 		if (this.options.allowGridResize) {
-			(this.baseResize = doc.createElement("DIV")).className = "mgBaseResize";
+			(this.baseResize = doc.createElement("DIV")).className = "g_BaseResize";
 			this.base.appendChild(this.baseResize);
 		}
 	};
@@ -237,19 +238,19 @@
 			
 			cols = this.columns;
 			if (data.Head) {
-				this.convertDataItem(h, data.Head, "<DIV class='mgC mgHR mgR", cols, this.options.allowColumnResize);
+				this.convertDataItem(h, data.Head, "<DIV class='g_C g_HR g_R", cols, this.options.allowColumnResize);
 			} else {
-				this.css.rules[".mgHead"] = { display : "none" };
+				this.css.rules[".g_Head"] = { display : "none" };
 			}
 			if (data.Body) {
-				this.convertDataItem(b, data.Body, "<DIV class='mgC mgBR mgR", cols, false);
+				this.convertDataItem(b, data.Body, "<DIV class='g_C g_BR g_R", cols, false);
 			} else {
-				this.css.rules[".mgBodyFixed"] = { display : "none" };
+				this.css.rules[".g_BodyFixed"] = { display : "none" };
 			}
 			if (data.Foot) {
-				this.convertDataItem(f, data.Foot, "<DIV class='mgC mgFR mgR", cols, false);
+				this.convertDataItem(f, data.Foot, "<DIV class='g_C g_FR g_R", cols, false);
 			} else {
-				this.css.rules[".mgFoot"] = { display : "none" };
+				this.css.rules[".g_Foot"] = { display : "none" };
 			}
 		}
 	};
@@ -270,7 +271,7 @@
 		if (allowColResize && (rowIdx = rows.length)) {
 			colIdx = cols;
 			while (colIdx) {
-				arr[--colIdx][0] = ("<SPAN class='mgRS mgRS" + colIdx + "'>&nbsp;</SPAN>") + arr[colIdx][0];
+				arr[--colIdx][0] = ("<SPAN class='g_RS g_RS" + colIdx + "'>&nbsp;</SPAN>") + arr[colIdx][0];
 			}
 		}
 	};
@@ -291,8 +292,8 @@
 				while (i) { rows[--i].unshift(""); }
 			}
 			if ((rows = data.Body) && (i = rows.length)) {
-				html = "<LABEL class=mgSH><INPUT tabIndex='-1' type=";
-				html += ((this.options.allowMultipleSelections) ? "checkbox class=mgCb" : "radio  class=mgRd");
+				html = "<LABEL class=g_SH><INPUT tabIndex='-1' type=";
+				html += ((this.options.allowMultipleSelections) ? "checkbox class=g_Cb" : "radio  class=g_Rd");
 				html += ">&nbsp;</LABEL>";
 				while (i) { rows[--i].unshift(html); }
 			}
@@ -339,7 +340,7 @@
 				this.bodyFixed2.innerHTML = bHTML.fixedHTML;
 			}
 		} else {
-			this.bodyStatic.innerHTML = "<DIV class='mgEmptySetMsg'>No results returned.</DIV>";
+			this.bodyStatic.innerHTML = "<DIV class='g_EmptySetMsg'>No results returned.</DIV>";
 		}
 	};
 	
@@ -366,10 +367,10 @@
 		
 		while (colIdx) {
 			if ((--colIdx) < fixedCols) {
-				fHtml[colIdx] = "<DIV class='mgCl mgCl" + colIdx + " mgFCl'>@" + colIdx + "@</DIV></DIV>";
-				sHtml[colIdx] = "<DIV class='mgCl mgCl" + colIdx + " mgFCl'></DIV>";
+				fHtml[colIdx] = "<DIV class='g_Cl g_Cl" + colIdx + " g_FCl'>@" + colIdx + "@</DIV></DIV>";
+				sHtml[colIdx] = "<DIV class='g_Cl g_Cl" + colIdx + " g_FCl'></DIV>";
 			} else {
-				sHtml[colIdx] = "<DIV class='mgCl mgCl" + colIdx + "'>@" + colIdx + "@</DIV></DIV>";
+				sHtml[colIdx] = "<DIV class='g_Cl g_Cl" + colIdx + "'>@" + colIdx + "@</DIV></DIV>";
 			}
 		}
 		
@@ -407,11 +408,11 @@
 		}
 		
 		// Align columns:
-		this.alignTimer = window.setTimeout(bind(this.alignColumns, this, false), 16);
+		this.alignTimer = window.setTimeout(bind(this.alignColumns, this, false, true), 16);
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
-	GridProto.alignColumns = function(reAlign) {
+	GridProto.alignColumns = function(reAlign, fromInit) {
 		var sNodes = [this.headStatic.children || [], this.bodyStatic.children || [], this.footStatic.children || []], 
 		    fNodes = [this.headFixed.children || [], this.bodyFixed2.children || [], this.footFixed.children || []], 
 		    allowColumnResize = this.options.allowColumnResize, 
@@ -426,7 +427,7 @@
 			this.computeBaseStyles();
 		} else {
 			for (var i=0, len=this.columns; i<len; i++) {
-				delete rules[".mgCl" + i].width;
+				delete rules[".g_Cl" + i].width;
 			}
 			this.setRules();
 		}
@@ -440,15 +441,18 @@
 			                    (nodes[2][i] || {}).offsetWidth || 0);
 			
 			this.columnWidths[i] = colWidth;
-			rules[".mgCl" + i] = { "width" : colWidth + "px", "text-align" : (colAlign[i] || "left") };
+			rules[".g_Cl" + i] = { "width" : colWidth + "px", "text-align" : (colAlign[i] || "left") };
 			if ((colBGColors[i] || "#ffffff") !== "#ffffff") {
-				rules[".mgCl" + i]["background-color"] = colBGColors[i];
+				rules[".g_Cl" + i]["background-color"] = colBGColors[i];
 			}
 			if (allowColumnResize) {
-				rules[".mgRS" + i] = { "margin-left" : (colWidth - 2) + "px" };
+				rules[".g_RS" + i] = { "margin-left" : (colWidth - 2) + "px" };
 			}
 		}
 		this.setRules();
+		if (fromInit === true) {
+			this.options.onLoad.call(this);
+		}
 	};
 	
 	//////////////////////////////////////////////////////////////////////////////////
@@ -459,24 +463,24 @@
 		    sBarSize = { "x" : this.body.offsetWidth - this.body.clientWidth, 
 		                 "y" : this.body.offsetHeight - this.body.clientHeight };
 		
-		rules[".mgC"] = { "visibility" : "visible" };
-		rules[".mgCl"] = { "background-color" : "#fff" };
-		rules[".mgBodyStatic"] = { "padding" : headHeight + "px 0px " + footHeight + "px 0px" };
+		rules[".g_C"] = { "visibility" : "visible" };
+		rules[".g_Cl"] = { "background-color" : "#fff" };
+		rules[".g_BodyStatic"] = { "padding" : headHeight + "px 0px " + footHeight + "px 0px" };
 		if (this.hasHead) {
-			rules[".mgHead"] = { "right" : sBarSize.x + "px" };
+			rules[".g_Head"] = { "right" : sBarSize.x + "px" };
 		}
 		if (this.hasFoot) {
-			rules[".mgFoot"] = { "bottom" : sBarSize.y + "px", "right" : sBarSize.x + "px" };
+			rules[".g_Foot"] = { "bottom" : sBarSize.y + "px", "right" : sBarSize.x + "px" };
 		}
 		if (this.hasFixedCols) {
-			rules[".mgBodyFixed" + ((msie < 8) ? "2" : "")] = { "top" : headHeight + "px", "bottom" : sBarSize.y + "px" };
+			rules[".g_BodyFixed" + ((msie < 8) ? "2" : "")] = { "top" : headHeight + "px", "bottom" : sBarSize.y + "px" };
 		}
 		if (this.options.allowGridResize) {
-			rules[".mgBaseResize"] = { "width" : sBarSize.x + "px", "height" : sBarSize.y + "px" };
+			rules[".g_BaseResize"] = { "width" : sBarSize.x + "px", "height" : sBarSize.y + "px" };
 		}
 		if (this.options.allowColumnResize) {
-			rules[".mgResizeDragger"] = { "bottom" : sBarSize.y + "px" };
-			rules[".mgRS"] = { "display" : "block", 
+			rules[".g_ResizeDragger"] = { "bottom" : sBarSize.y + "px" };
+			rules[".g_RS"] = { "display" : "block", 
 			                   "position" : "relative", 
 			                   "margin-bottom" : (headHeight * -1) + "px", 
 			                   "height" : headHeight + "px" };
@@ -614,14 +618,14 @@
 		    targetClass = target.className || "";
 		
 		if (event.button !== 2) {
-			if (this.options.allowColumnResize && targetClass.indexOf("mgRS") > -1) {
+			if (this.options.allowColumnResize && targetClass.indexOf("g_RS") > -1) {
 				return this.initResizeColumn(event, target, targetClass);
 			} else if (this.hasBody && this.options.allowClientSideSorting) {
-				while (targetClass.indexOf("mgCl") === -1 && targetClass !== "mgHead") {
+				while (targetClass.indexOf("g_Cl") === -1 && targetClass !== "g_Head") {
 					targetClass = (target = target.parentNode).className || "";
 				}
-				if (targetClass.indexOf("mgCl") > -1) {
-					this.sortColumn(parseInt(/mgCl(\d+)/.exec(targetClass)[1], 10));
+				if (targetClass.indexOf("g_Cl") > -1) {
+					this.sortColumn(parseInt(/g_Cl(\d+)/.exec(targetClass)[1], 10));
 				}
 			}
 		}
@@ -629,7 +633,7 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.initResizeColumn = function(event, target, targetClass) {
-		var colIdx = parseInt(targetClass.replace(/mgRS/g, ""), 10), 
+		var colIdx = parseInt(targetClass.replace(/g_RS/g, ""), 10), 
 		    doc = document;
 		
 		this.tmp = {
@@ -643,7 +647,7 @@
 			dragger : doc.createElement("DIV")
 		};
 		
-		this.tmp.dragger.className = "mgResizeDragger";
+		this.tmp.dragger.className = "g_ResizeDragger";
 		this.tmp.dragger.style.left = this.tmp.origLeft + "px";
 		this.base.insertBefore(this.tmp.dragger, this.base.firstChild);
 		
@@ -678,8 +682,8 @@
 		removeEvent(document, this.endEvt, this.tmp.boundEndEvt);
 		
 		this.tmp.dragger.parentNode.removeChild(this.tmp.dragger);
-		this.css.rules[".mgCl" + colIdx]["width"] = newWidth + "px";
-		this.css.rules[".mgRS" + colIdx]["margin-left"] = (newWidth - 2) + "px";
+		this.css.rules[".g_Cl" + colIdx]["width"] = newWidth + "px";
+		this.css.rules[".g_RS" + colIdx]["margin-left"] = (newWidth - 2) + "px";
 		this.columnWidths[colIdx] = newWidth;
 		this.setRules();
 		this.syncScrolls();
@@ -719,7 +723,7 @@
 		});
 		
 		// Update the grid body HTML:
-		this.convertDataItem(this.cellData.body, rawData, "<DIV class='mgC mgBR mgR", this.columns, false);
+		this.convertDataItem(this.cellData.body, rawData, "<DIV class='g_C g_BR g_R", this.columns, false);
 		this.generateGridBody();
 		
 		// Generate new sort order array:
@@ -817,14 +821,14 @@
 		
 		if (event.button !== 2 && this.options.allowSelections) {
 			targetClass = target.className || "";
-			while (targetClass.indexOf("mgBR") === -1 && targetClass !== "mgBody") {
+			while (targetClass.indexOf("g_BR") === -1 && targetClass !== "g_Body") {
 				targetClass = (target = target.parentNode).className || "";
 			}
-			if (targetClass.indexOf("mgBR") > -1) {
+			if (targetClass.indexOf("g_BR") > -1) {
 				update = true;
-				rowIdx = parseInt(/mgR(\d+)/.exec(targetClass)[1], 10);
+				rowIdx = parseInt(/g_R(\d+)/.exec(targetClass)[1], 10);
 				targetClass = (target = target.parentNode).className || "";
-				isSelCol = (this.options.showSelectionColumn && (targetClass.indexOf("mgCl0") > -1));
+				isSelCol = (this.options.showSelectionColumn && (targetClass.indexOf("g_Cl0") > -1));
 				isCtrlKeyLike = this.usesTouch || isSelCol;
 				
 				if (this.usesTouch && this.options.showSelectionColumn && (update = isSelCol)) {
@@ -911,13 +915,13 @@
 		    rowIdx;
 		
 		if (event.button !== 2) {
-			if (targetClass.indexOf("mgCb") > -1 || targetClass.indexOf("mgRd") > -1) {
+			if (targetClass.indexOf("g_Cb") > -1 || targetClass.indexOf("g_Rd") > -1) {
 				do {
 					targetClass = (target = target.parentNode).className || "";
-				} while (targetClass.indexOf("mgBR") === -1 && targetClass !== "mgBody");
+				} while (targetClass.indexOf("g_BR") === -1 && targetClass !== "g_Body");
 				
-				if (targetClass.indexOf("mgBR") > -1) {
-					rowIdx = parseInt(/mgR(\d+)/.exec(targetClass)[1], 10);
+				if (targetClass.indexOf("g_BR") > -1) {
+					rowIdx = parseInt(/g_R(\d+)/.exec(targetClass)[1], 10);
 					(event.target || event.srcElement).checked = (indexOf(this.selectedIndexes, rowIdx) > -1);
 				}
 			}

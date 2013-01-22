@@ -2,7 +2,7 @@
  Grid
  MIT-style license. Copyright 2012 Matt V. Murphy
 */
-.mgBase {
+.g_Base {
 	/* Base grid container */
 	position : relative;
 	padding : 0px;
@@ -17,7 +17,7 @@
 	direction : ltr;
 	-webkit-tap-highlight-color : transparent;
 }
-.mgBaseResize {
+.g_BaseResize {
 	/* Used as control for resizing the grid */
 	position : absolute;
 	z-index : 5;
@@ -27,17 +27,17 @@
 	cursor : nw-resize;
 	-webkit-user-select : none;
 }
-.mgBaseResize:hover {
+.g_BaseResize:hover {
 	background-color : #ccc;
 }
-.mgRS {
+.g_RS {
 	/* Used as control for resizing a grid column */
 	display : none;
 	width : 4px;
 	cursor : e-resize;
 	-webkit-user-select : none;
 }
-.mgResizeDragger {
+.g_ResizeDragger {
 	/* Displays as vertical ruler when resizing a column */
 	position : absolute;
 	z-index : 5;
@@ -45,12 +45,12 @@
 	width : 3px;
 	background-color : #ccc;
 }
-.mgEmptySetMsg {
+.g_EmptySetMsg {
 	/* Displayed when no rows are rendered in the grid body */
 	padding : 10px;
 	font-style : italic;
 }
-.mgHead {
+.g_Head {
 	/* Base header container */
 	position : absolute;
 	z-index : 2;
@@ -58,20 +58,20 @@
 	left : 0px;
 	overflow : hidden;
 }
-.mgBody {
+.g_Body {
 	/* Base body container */
 	width : 100%;
 	height : 100%;
 	overflow : scroll;
 }
-.mgFoot {
+.g_Foot {
 	/* Base footer container */
 	position : absolute;
 	z-index : 2;
 	left : 0px;
 	overflow : hidden;
 }
-.mgHeadFixed {
+.g_HeadFixed {
 	/* Base header fixed container if fixedCols > 0 */
 	position : absolute;
 	z-index : 3;
@@ -79,7 +79,7 @@
 	left : 0px;
 	overflow : hidden;
 }
-.mgBodyFixed {
+.g_BodyFixed {
 	/* Base body fixed container if fixedCols > 0 */
 	position : absolute;
 	*position : static;
@@ -88,7 +88,7 @@
 	left : 0px;
 	overflow : hidden;
 }
-.mgBodyFixed2 {
+.g_BodyFixed2 {
 	/* Inner base body fixed container if fixedCols > 0. Used for IE7 support */
 	*position : absolute;
 	*z-index : 1;
@@ -96,7 +96,7 @@
 	*left : 0px;
 	*overflow : hidden;
 }
-.mgFootFixed {
+.g_FootFixed {
 	/* Base footer fixed container if fixedCols > 0 */
 	position : absolute;
 	z-index : 3;
@@ -104,7 +104,7 @@
 	left : 0px;
 	overflow : hidden;
 }
-.mgCl {
+.g_Cl {
 	/* Grid column container */
 	display : inline-block;
 	*display : inline;
@@ -112,7 +112,7 @@
 	vertical-align : top;
 	overflow : hidden;
 }
-.mgHR {
+.g_HR {
 	/* Grid header cell */
 	padding : 4px 12px 4px 6px !important;
 	border-width : 0px 1px 1px 0px;
@@ -129,11 +129,11 @@
 	-o-user-select : none;
 	user-select : none;
 }
-.mgBR {
+.g_BR {
 	/* Grid body cell */
 	border-width : 0px 0px 1px 0px;
 }
-.mgFR {
+.g_FR {
 	/* Grid footer cell */
 	border-width : 1px 1px 0px 0px;
 	border-color : #ccc !important;
@@ -141,7 +141,7 @@
 	background-position : 0px -19px;
 	background-repeat: repeat-x;
 }
-.mgC {
+.g_C {
 	/* Grid cell (all) */
 	padding : 6px 12px 6px 6px;
 	border-color : #eee;
@@ -155,14 +155,14 @@
 	cursor : default;
 	overflow : hidden;
 }
-.mgSH {
+.g_SH {
 	/* Label container for checkbox / radio selection element */
 	display : inline-block;
 	*display : inline;
 	zoom : 1;
 	width : 15px;
 }
-.mgCb, .mgRd {
+.g_Cb, .g_Rd {
 	/* Checkbox and radio selection elements */
 	margin : -1px 0px 0px 0px;
 	padding : 0px;
@@ -172,12 +172,12 @@
 	vertical-align : middle;
 	overflow : hidden;
 }
-.mgRd {
+.g_Rd {
 	margin-top : -2px;
 }
 @media print {
 	/* Print overrides */
-	.mgBase, .mgHead, .mgBody, .mgFoot { overflow : visible; }
-	.mgHeadStatic, .mgFootStatic { margin-left : 0px !important; }
-	.mgBodyFixed2 { margin-top : 0px !important; }
+	.g_Base, .g_Head, .g_Body, .g_Foot { overflow : visible; }
+	.g_HeadStatic, .g_FootStatic { margin-left : 0px !important; }
+	.g_BodyFixed2 { margin-top : 0px !important; }
 }
