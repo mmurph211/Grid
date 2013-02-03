@@ -693,7 +693,7 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.sortColumn = function(colIdx, sortAsc) {
-		var colIdx = (!isNaN(colIdx || -1)) ? colIdx || -1 : -1, 
+		var colIdx = parseInt(colIdx, 10) || ((colIdx === 0) ? 0 : -1), 
 		    colSortAs = (colIdx > -1) ? this.options.colSortTypes[colIdx] || "string" : "none", 
 		    lastCol = this.lastSortedColumn;
 		

@@ -111,12 +111,14 @@
 				    gridColAlign = [];
 				
 				var onColumnSort = function(newIndexOrder, columnIndex, lastColumnIndex) {
-					var doc = document;
+					var offset = (this.options.allowSelections && this.options.showSelectionColumn) ? 1 : 0, 
+					    doc = document;
+					
 					if (columnIndex !== lastColumnIndex) {
 						if (lastColumnIndex > -1) {
-							doc.getElementById("demoHdr" + (lastColumnIndex - 1)).parentNode.style.backgroundColor = "";
+							doc.getElementById("demoHdr" + (lastColumnIndex - offset)).parentNode.style.backgroundColor = "";
 						}
-						doc.getElementById("demoHdr" + (columnIndex - 1)).parentNode.style.backgroundColor = "#f7f7f7";
+						doc.getElementById("demoHdr" + (columnIndex - offset)).parentNode.style.backgroundColor = "#f7f7f7";
 					}
 				};
 				
