@@ -427,7 +427,7 @@
 			this.computeBaseStyles();
 		} else {
 			for (var i=0, len=this.columns; i<len; i++) {
-				delete rules[".g_Cl" + i].width;
+				rules[".g_Cl" + i].width = "auto";
 			}
 			this.setRules();
 		}
