@@ -87,6 +87,7 @@
 	//////////////////////////////////////////////////////////////////////////////////
 	var data = new Object();
 	var ctxArr = new Array();
+	GridProto.rowLength = 0;
 
 	GridProto.init = function() {
 		var srcType = this.options.srcType,
@@ -108,6 +109,7 @@
 			this.convertData(data = this.convertXmlDataToJsonData(data));
 		}
 
+		this.rowLength = data.Body.length;
 		this.initCtxArr();
 		this.generateGrid();
 		this.displayGrid();
@@ -518,31 +520,27 @@
 	}
 
 	GridProto.filterSearch = function(searchStr) {
-		var filterArr = [];
-		var strArr = searchStr.split(' ');
-		for (var j = 0, k = 0; j < ctxArr.length; j++) {
+		searchStr = trim(searchStr);
+		var toFilter = data.clone();
+		if (searchStr != '') {
+			var strArr = searchStr.split(' ');
 			var founded = true;
-			for (var i = 0; i < strArr.length; i++) {
-				founded &= (ctxArr[j].indexOf(strArr[i]) != -1);
-				if (!founded) break;
-			}
-			if (!founded) {
-				filterArr[k] = j;
-				k++;
-			}
-		}
-		var i = 0; //order: asc
-		for (var j = 0; i < ctxArr.length && j < filterArr.length; i++) {
-			if (i == filterArr[j]) {
-				this.hideRow(i);
-				j++;
-			} else {
-				this.showRow(i);
+			var j = ctxArr.length;
+			while (--j > -1) {
+				founded = true;
+				for (var i = 0; i < strArr.length; i++) {
+					founded &= (ctxArr[j].indexOf(strArr[i]) != -1);
+					if (!founded) break;
+				}
+				if (!founded) {
+					toFilter.Body.splice(j, 1);
+				}
 			}
 		}
-		for (; i < ctxArr.length; i++) {
-			this.showRow(i);
-		}
+		this.rowLength = toFilter.Body.length;
+		this.convertData(toFilter);
+		this.generateGrid();
+		this.displayGrid();
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////
@@ -1126,6 +1124,31 @@
 	// Utility Methods
 	//
 	//////////////////////////////////////////////////////////////////////////////////
+	Object.prototype.clone = function() {
+		var objClone;
+		if (this.constructor == Object) {
+			objClone = new this.constructor();
+		} else {
+			objClone = new this.constructor(this.valueOf());
+		}
+		for (var key in this) {
+			if (objClone[key] != this[key]) {
+				if (typeof(this[key]) == 'object') {
+					objClone[key] = this[key].clone();
+				} else {
+					objClone[key] = this[key];
+				}
+			}
+		}
+		//objClone.toString = this.toString;
+		//objClone.valueOf = this.valueOf;
+		return objClone;
+	}
+
+	var trim = function(str) {　　
+		return str.replace(/(^\s*)|(\s*$)/g, "");　　
+	}
+	//////////////////////////////////////////////////////////////////////////////////
 	var getIEVersion = function() {
 		var nav, version;
 
@@ -1155,7 +1178,31 @@
 			}
 		}
 
-		return json || (sourceType === "object" && (json = source)) || null;
+		if (sourceType === "object") {
+			json = source;
+		}
+		var obj = new Object();
+		if (!(json.hasOwnProperty('Head') && json.hasOwnProperty('Body'))) {
+			obj.Head = [];
+			obj.Body = [];
+			obj.Head[0] = [];
+			var k = 0;
+			for (var p in json[0]) {
+				obj.Head[0][k] = p;
+				k++;
+			}
+			for (var i = 0; i < json.length; i++) {
+				obj.Body[i] = [];
+				k = 0;
+				for (var p in json[i]) {
+					obj.Body[i][k] = json[i][p];
+					k++;
+				}
+			}
+			json = obj;
+		}
+
+		return json || null;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////
