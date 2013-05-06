@@ -7,7 +7,12 @@
 (function(window, document, undefined) {
 	"use strict";
 
-	var GridProto;
+	var nothing = function() {},
+	jsonData = {},
+	sortCache = {},
+	ctxArr = [],
+		visibleData = [],
+		lastSortedColumn = [-1, null];
 	var Grid = function(element, options) {
 		if ((this.element = (typeof(element) === "string") ? $(element) : element)) {
 			this.css = {
@@ -23,9 +28,6 @@
 				foot: []
 			};
 			this.alignTimer = null;
-			this.rawData = [];
-			this.sortCache = {};
-			this.lastSortedColumn = [-1, null];
 			this.selectedIndexes = [];
 			this.usesTouch = (window.ontouchstart !== undefined);
 			this.startEvt = (this.usesTouch) ? "touchstart" : "mousedown";
@@ -36,13 +38,10 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
-	(GridProto = Grid.prototype).nothing = function() {};
+	var GridProto = Grid.prototype;
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.setOptions = function(options) {
-		var hasOwnProp = Object.prototype.hasOwnProperty,
-			option;
+		var option;
 
 		this.options = {
 			srcType: "", // "dom", "json", "xml"
@@ -53,21 +52,24 @@
 			allowSelections: false,
 			allowMultipleSelections: false,
 			showSelectionColumn: false,
-			onColumnSort: this.nothing,
-			onResizeGrid: this.nothing,
-			onResizeGridEnd: this.nothing,
-			onResizeColumn: this.nothing,
-			onResizeColumnEnd: this.nothing,
-			onRowSelect: this.nothing,
-			onLoad: this.nothing,
-			supportMultipleGridsInView: false,
+			onColumnSort: nothing,
+			onResizeGrid: nothing,
+			onResizeGridEnd: nothing,
+			onResizeColumn: nothing,
+			onResizeColumnEnd: nothing,
+			onRowSelect: nothing,
+			onLoad: nothing,
 			fixedCols: 0,
 			selectedBgColor: "#eaf1f7",
 			fixedSelectedBgColor: "#dce7f0",
 			colAlign: [], // "left", "center", "right"
 			colBGColors: [],
 			colSortTypes: [], // "string", "number", "date", "custom", "none"
-			customSortCleaner: null
+			customSortCleaner: null,
+			autoFoot: false,
+			footArray: [],
+			autoHead: false,
+			headArray: []
 		};
 
 		if (options) {
@@ -84,9 +86,6 @@
 		this.options.fixedCols = (!this.usesTouch) ? this.options.fixedCols : 0;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
-	var data = new Object();
-	var ctxArr = new Array();
 	GridProto.rowLength = 0;
 
 	GridProto.init = function() {
@@ -98,27 +97,26 @@
 
 		// DOM:
 		if (srcType === "dom" && (srcData = (typeof(srcData) === "string") ? $(srcData) : srcData)) {
-			this.convertData(data = this.convertDomDataToJsonData(srcData));
+			this.convertData(jsonData = this.convertDomDataToJsonData(srcData));
 
 			// JSON:
-		} else if (srcType === "json" && (data = parseJSON(srcData))) {
-			this.convertData(data);
+		} else if (srcType === "json" && (jsonData = parseJSON.call(this, srcData))) {
+			this.convertData(jsonData);
 
 			// XML:
-		} else if (srcType === "xml" && (data = parseXML(srcData))) {
-			this.convertData(data = this.convertXmlDataToJsonData(data));
+		} else if (srcType === "xml" && (jsonData = parseXML(srcData))) {
+			this.convertData(jsonData = this.convertXmlDataToJsonData(jsonData));
 		}
 
-		this.rowLength = data.Body.length;
+		this.rowLength = jsonData.Body.length;
 		this.initCtxArr();
 		this.generateGrid();
 		this.displayGrid();
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.initCtxArr = function() {
-		for (var i = 0; i < data.Body.length; i++) {
-			ctxArr[i] = data.Body[i].toString();
+		for (var i = 0; i < jsonData.Body.length; i++) {
+			ctxArr[i] = jsonData.Body[i].toString();
 		}
 	}
 
@@ -154,7 +152,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.addEvents = function() {
 		var wheelEvent;
 
@@ -189,7 +186,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.convertDomDataToJsonData = function(data) {
 		var sections = {
 			"thead": "Head",
@@ -217,7 +213,6 @@
 		return json;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.convertXmlDataToJsonData = function(data) {
 		var sections = {
 			"thead": "Head",
@@ -257,13 +252,13 @@
 		return json;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.convertData = function(data) {
 		var base, cols, h, b, f;
 
 		this.addSelectionColumn(data);
-		this.rawData = data.Body || [];
-		if ((base = data.Head || data.Body || data.Foot || null)) {
+		//this.rawData = data.Body || [];
+
+		if ((base = data.Body || data.Head || data.Foot || null)) {
 			cols = this.columns = base[0].length;
 			h = this.cellData.head;
 			b = this.cellData.body;
@@ -299,10 +294,14 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.convertDataItem = function(arr, rows, rowClass, cols, allowColResize) {
 		var rowIdx = rows.length,
-			rowDiv, row, colIdx;
+			colIdx = cols,
+			rowDiv, row;
+
+		while (colIdx) {
+			arr[--colIdx] = [];
+		}
 
 		while (rowIdx) {
 			rowDiv = rowClass + (--rowIdx) + "'>";
@@ -320,7 +319,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.addSelectionColumn = function(data) {
 		var html, rows, i;
 
@@ -353,40 +351,35 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.generateGrid = function() {
 		this.hasHead = ((this.cellData.head[0] || []).length > 0);
 		this.hasBody = ((this.cellData.body[0] || []).length > 0);
 		this.hasFoot = ((this.cellData.foot[0] || []).length > 0);
-		this.hasHeadOrFoot = (this.hasHead || this.hasFoot);
-		this.hasFixedCols = (this.options.fixedCols > 0);
 
 		this.generateGridHead();
 		this.generateGridBody();
 		this.generateGridFoot();
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.generateGridHead = function() {
 		var hHTML;
 
 		if (this.hasHead) {
 			hHTML = this.generateGridSection(this.cellData.head);
 			this.headStatic.innerHTML = hHTML.fullHTML;
-			if (this.hasFixedCols) {
+			if (this.options.fixedCols > 0) {
 				this.headFixed.innerHTML = hHTML.fixedHTML;
 			}
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.generateGridBody = function() {
 		var bHTML;
 
 		if (this.hasBody) {
 			bHTML = this.generateGridSection(this.cellData.body);
 			this.bodyStatic.innerHTML = bHTML.fullHTML;
-			if (this.hasFixedCols) {
+			if (this.options.fixedCols > 0) {
 				this.bodyFixed2.innerHTML = bHTML.fixedHTML;
 			}
 		} else {
@@ -394,20 +387,18 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.generateGridFoot = function() {
 		var fHTML;
 
 		if (this.hasFoot) {
 			fHTML = this.generateGridSection(this.cellData.foot);
 			this.footStatic.innerHTML = fHTML.fullHTML;
-			if (this.hasFixedCols) {
+			if (this.options.fixedCols > 0) {
 				this.footFixed.innerHTML = fHTML.fixedHTML;
 			}
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.generateGridSection = function(cols) {
 		var replaceFunc = function($1, $2) {
 			return cols[parseInt($2, 10)].join("</DIV>");
@@ -433,7 +424,6 @@
 		};
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.displayGrid = function() {
 		var srcType = this.options.srcType,
 			srcData = this.options.srcData,
@@ -467,19 +457,14 @@
 	};
 
 	GridProto.hideRow = function(rowIdx) {
-		var toHide = document.getElementsByClassName('g_C g_BR g_R' + rowIdx);
-		for (var j = 0; j < toHide.length; j++) {
-			toHide[j].style.display = 'none';
-		}
+		var divArr = doc.getElementsByClassName('g_C g_BR g_R' + rowIdx);
+		setVisible(divArr, 'none');
 	}
 
 	GridProto.showRow = function(rowIdx) {
-		var toShow = document.getElementsByClassName('g_C g_BR g_R' + rowIdx);
-		for (var j = 0; j < toShow.length; j++) {
-			toShow[j].style.display = '';
-		}
+		var divArr = doc.getElementsByClassName('g_C g_BR g_R' + rowIdx);
+		setVisible(divArr, '');
 	}
-
 
 	GridProto.hideRows = function(rowIdxArr) {
 		for (var i = 0; i < rowIdxArr.length; i++) {
@@ -494,17 +479,13 @@
 	}
 
 	GridProto.hideColumn = function(colIdx) {
-		var toHide = document.getElementsByClassName('g_Cl g_Cl' + colIdx);
-		for (var j = 0; j < toHide.length; j++) {
-			toHide[j].style.display = 'none';
-		}
+		var divArr = doc.getElementsByClassName('g_Cl g_Cl' + colIdx);
+		setVisible(divArr, 'none');
 	}
 
 	GridProto.showColumn = function(colIdx) {
-		var toShow = document.getElementsByClassName('g_Cl g_Cl' + colIdx);
-		for (var j = 0; j < toShow.length; j++) {
-			toShow[j].style.display = '';
-		}
+		var divArr = doc.getElementsByClassName('g_Cl g_Cl' + colIdx);
+		setVisible(divArr, '');
 	}
 
 	GridProto.hideColumns = function(colIdxArr) {
@@ -519,9 +500,29 @@
 		}
 	}
 
+	GridProto.hideHead = function() {
+		var divArr = doc.getElementsByClassName('g_C g_HR g_R0');
+		setVisible(divArr, 'none');
+	}
+
+	GridProto.showHead = function() {
+		var divArr = doc.getElementsByClassName('g_C g_HR g_R0');
+		setVisible(divArr, '');
+	}
+
+	GridProto.hideFoot = function() {
+		var divArr = doc.getElementsByClassName('g_C g_FR g_R0');
+		setVisible(divArr, 'none');
+	}
+
+	GridProto.showFoot = function() {
+		var divArr = doc.getElementsByClassName('g_C g_FR g_R0');
+		setVisible(divArr, '');
+	}
+
 	GridProto.filterSearch = function(searchStr) {
 		searchStr = trim(searchStr);
-		var toFilter = data.clone();
+		var toFilter = clone(jsonData);
 		if (searchStr != '') {
 			var strArr = searchStr.split(' ');
 			var founded = true;
@@ -537,13 +538,25 @@
 				}
 			}
 		}
+		visibleData = toFilter.Body;
 		this.rowLength = toFilter.Body.length;
-		this.convertData(toFilter);
-		this.generateGrid();
-		this.displayGrid();
+		var cols = this.hasBody = this.rowLength > 0 ? toFilter.Body[0].length : 0;
+		this.convertDataItem(this.cellData.body, visibleData, "<DIV class='g_C g_BR g_R", cols, false);
+		this.generateGridBody();
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////
+	GridProto.refreshHead = function(headArray) {
+		headArray = headArray || [];
+		this.convertDataItem(this.cellData.head, [headArray], "<DIV class='g_C g_HR g_R", this.cellData.body.length, false);
+		this.generateGridHead();
+	}
+
+	GridProto.refreshFoot = function(footArray) {
+		footArray = footArray || [];
+		this.convertDataItem(this.cellData.foot, [footArray], "<DIV class='g_C g_FR g_R", this.cellData.body.length, false);
+		this.generateGridFoot();
+	}
+
 	GridProto.alignColumns = function(reAlign, fromInit) {
 		var sNodes = [this.headStatic.children || [], this.bodyStatic.children || [], this.footStatic.children || []],
 			fNodes = [this.headFixed.children || [], this.bodyFixed2.children || [], this.footFixed.children || []],
@@ -590,7 +603,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.computeBaseStyles = function() {
 		var rules = this.css.rules,
 			headHeight = (this.hasHead) ? this.head.offsetHeight : 0,
@@ -620,7 +632,7 @@
 				"right": sBarSize.x + "px"
 			};
 		}
-		if (this.hasFixedCols) {
+		if (this.options.fixedCols > 0) {
 			rules[".g_BodyFixed" + ((msie < 8) ? "2" : "")] = {
 				"top": headHeight + "px",
 				"bottom": sBarSize.y + "px"
@@ -645,10 +657,9 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.syncScrolls = function(event) {
-		var sL = (this.hasHeadOrFoot) ? this.body.scrollLeft : 0,
-			sT = (this.hasFixedCols) ? this.body.scrollTop : 0;
+		var sL = (this.hasHead || this.hasFoot) ? this.body.scrollLeft : 0,
+			sT = (this.options.fixedCols > 0) ? this.body.scrollTop : 0;
 
 		if (sL !== this.lastScrollLeft) {
 			this.lastScrollLeft = sL;
@@ -665,7 +676,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.simulateMouseScroll = function(event) {
 		var event = event || window.event,
 			deltaY = 0;
@@ -682,10 +692,8 @@
 		this.syncScrolls();
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.setRules = function() {
-		var idRulePrefix = (this.options.supportMultipleGridsInView) ? this.css.idRulePrefix : "",
-			hasOwnProp = Object.prototype.hasOwnProperty,
+		var idRulePrefix = this.css.idRulePrefix,
 			rules = this.css.rules,
 			sheet = this.css.sheet,
 			cssText = [],
@@ -716,7 +724,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.initResizeGrid = function(event) {
 		var event = event || window.event,
 			pagePos;
@@ -740,7 +747,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.resizeGrid = function(event) {
 		var pagePos, xDif, yDif, newWidth, newHeight, elemStyle;
 
@@ -765,7 +771,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.endResizeGrid = function(event) {
 		removeEvent(document, this.moveEvt, this.tmp.boundMoveEvt);
 		removeEvent(document, this.endEvt, this.tmp.boundEndEvt);
@@ -773,7 +778,6 @@
 		this.tmp = undefined;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.delegateHeaderEvent = function(event) {
 		var event = event || window.event,
 			target = event.target || event.srcElement,
@@ -793,7 +797,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.initResizeColumn = function(event, target, targetClass) {
 		var colIdx = parseInt(targetClass.replace(/g_RS/g, ""), 10),
 			doc = document;
@@ -818,7 +821,6 @@
 		return stopEvent(event);
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.resizeColumn = function(event) {
 		var clientX = getEventPositions(event || window.event, "client").x,
 			xDif = clientX - this.tmp.origX,
@@ -835,7 +837,6 @@
 		this.options.onResizeColumn.apply(this, [this.tmp.colIdx, newWidth]);
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.endResizeColumn = function(event) {
 		var newWidth = this.tmp.newWidth || this.tmp.origWidth,
 			colIdx = this.tmp.colIdx;
@@ -853,11 +854,10 @@
 		this.tmp = undefined;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.sortColumn = function(colIdx, sortAsc) {
 		var colIdx = parseInt(colIdx, 10) || ((colIdx === 0) ? 0 : -1),
 			colSortAs = (colIdx > -1) ? this.options.colSortTypes[colIdx] || "string" : "none",
-			lastCol = this.lastSortedColumn;
+			lastCol = lastSortedColumn;
 
 		if (colSortAs !== "none") {
 			sortAsc = (sortAsc === undefined) ? ((colIdx === lastCol[0]) ? !lastCol[1] : true) : !! sortAsc;
@@ -865,10 +865,9 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.sortRawData = function(colIdx, colSortAs, sortAsc) {
 		var selIndexes, ltVal, gtVal, i,
-		rawData = this.rawData,
+		rawData = visibleData,
 			newSelIndexes = [],
 			newIdxOrder = [],
 			that = this;
@@ -906,27 +905,27 @@
 		}
 
 		// Fire sort event:
-		this.options.onColumnSort.apply(this, [newIdxOrder.concat(), colIdx, this.lastSortedColumn[0]]);
-		this.lastSortedColumn = [colIdx, sortAsc];
+		this.options.onColumnSort.apply(this, [newIdxOrder.concat(), colIdx, lastSortedColumn[0]]);
+		lastSortedColumn = [colIdx, sortAsc];
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.getSortResult = function(type, colIdx, ltVal, gtVal, a, b, keyA, keyB) {
 		if (a === b) {
 			return 0;
 		}
+		if (a == null || a == undefined) a = '0';
+		if (b == null || b == undefined) b = '0';
 
-		if (this.sortCache[(keyA = type + "_" + a)] === undefined) {
-			this.sortCache[keyA] = (type === "string") ? a : (type === "number") ? parseFloat(a) || -Infinity : (type === "date") ? new Date(a).getTime() || -Infinity : (type === "custom") ? this.options.customSortCleaner(a, colIdx) : a;
+		if (sortCache[(keyA = type + "_" + a)] === undefined) {
+			sortCache[keyA] = (type === "string") ? a : (type === "number") ? parseFloat(a) || -Infinity : (type === "date") ? new Date(a).getTime() || -Infinity : (type === "custom") ? this.options.customSortCleaner(a, colIdx) : a;
 		}
-		if (this.sortCache[(keyB = type + "_" + b)] === undefined) {
-			this.sortCache[keyB] = (type === "string") ? b : (type === "number") ? parseFloat(b) || -Infinity : (type === "date") ? new Date(b).getTime() || -Infinity : (type === "custom") ? this.options.customSortCleaner(b, colIdx) : b;
+		if (sortCache[(keyB = type + "_" + b)] === undefined) {
+			sortCache[keyB] = (type === "string") ? b : (type === "number") ? parseFloat(b) || -Infinity : (type === "date") ? new Date(b).getTime() || -Infinity : (type === "custom") ? this.options.customSortCleaner(b, colIdx) : b;
 		}
 
-		return (this.sortCache[keyA] < this.sortCache[keyB]) ? ltVal : gtVal;
+		return (sortCache[keyA] < sortCache[keyB]) ? ltVal : gtVal;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.toggleSelectAll = function(toggle) {
 		var selIndexes = this.selectedIndexes,
 			toSelect = [],
@@ -937,7 +936,7 @@
 			if (toggle) {
 				toSelect = [0];
 				if (this.options.allowMultipleSelections) {
-					i = this.rawData.length;
+					i = visibleData.length;
 					while (i) {
 						toSelect[--i] = i;
 					}
@@ -952,7 +951,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.selectIndexes = function(rowIndexes) {
 		var selIndexes = this.selectedIndexes,
 			toSelect = [],
@@ -979,7 +977,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.selectRange = function(event) {
 		var event = event || window.event,
 			target = event.target || event.srcElement,
@@ -1007,7 +1004,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.updateSelectedIndexes = function(rowIdx, ctrlPressed, shiftPressed) {
 		var selIndexes = this.selectedIndexes.concat(),
 			rowIdxSelected = (indexOf(selIndexes, rowIdx) > -1),
@@ -1050,7 +1046,6 @@
 		this.options.onRowSelect.apply(this, [toSelect, toRemove, rowIdx]);
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.highlightRows = function(toSelect, toRemove) {
 		var nodes = [this.bodyFixed2.children, this.bodyStatic.children],
 			fixedSelBgColor = this.options.fixedSelectedBgColor,
@@ -1088,7 +1083,6 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	GridProto.preventSelectionInputStateChange = function(event) {
 		var event = event || window.event,
 			target = event.target || event.srcElement,
@@ -1109,60 +1103,35 @@
 		}
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
-	GridProto.cleanUp = function() {
-		this.alignTimer = (this.alignTimer) ? window.clearTimeout(this.alignTimer) : null;
-		this.element.innerHTML = "";
-		try {
-			this.css.sheet.parentNode.removeChild(this.css.sheet);
-		} catch (e) {}
-		return null;
-	};
-
-	//////////////////////////////////
-	//
-	// Utility Methods
-	//
-	//////////////////////////////////////////////////////////////////////////////////
-	Object.prototype.clone = function() {
+	var clone = function(ori) {
 		var objClone;
-		if (this.constructor == Object) {
-			objClone = new this.constructor();
-		} else {
-			objClone = new this.constructor(this.valueOf());
-		}
-		for (var key in this) {
-			if (objClone[key] != this[key]) {
-				if (typeof(this[key]) == 'object') {
-					objClone[key] = this[key].clone();
+		if (typeof ori !== 'object') objClone = ori;
+		else {
+			objClone = ori && new ori.constructor();
+			for (var key in ori) {
+				if (typeof(ori[key]) !== 'object') {
+					objClone[key] = ori[key];
 				} else {
-					objClone[key] = this[key];
+					objClone[key] = clone(ori[key]);
 				}
 			}
 		}
-		//objClone.toString = this.toString;
-		//objClone.valueOf = this.valueOf;
 		return objClone;
-	}
+	};
 
 	var trim = function(str) {　　
 		return str.replace(/(^\s*)|(\s*$)/g, "");　　
 	}
-	//////////////////////////////////////////////////////////////////////////////////
-	var getIEVersion = function() {
-		var nav, version;
 
-		if ((nav = navigator).appName === "Microsoft Internet Explorer") {
-			if (new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})").exec(nav.userAgent)) {
-				version = parseFloat(RegExp.$1);
-			}
+	var setVisible = function(divArr, style) {
+		for (var i = 0, len = divArr.length; i < len; i++) {
+			divArr[i].style.display = style;
 		}
-		return (version > 5) ? version : undefined;
-	};
+	}
 
-	//////////////////////////////////////////////////////////////////////////////////
 	var parseJSON = function(source) {
-		var sourceType, json, win;
+		var sourceType, json, win, k = 0,
+			obj = {};
 
 		if ((sourceType = typeof(source)) === "string") {
 			if (((win = window).JSON || {}).parse) {
@@ -1176,22 +1145,16 @@
 					}
 				})();
 			}
-		}
-
-		if (sourceType === "object") {
+		} else {
 			json = source;
 		}
-		var obj = new Object();
-		if (!(json.hasOwnProperty('Head') && json.hasOwnProperty('Body'))) {
-			obj.Head = [];
-			obj.Body = [];
-			obj.Head[0] = [];
-			var k = 0;
-			for (var p in json[0]) {
-				obj.Head[0][k] = p;
-				k++;
+		//non-formatable object
+		if (!hasOwnProp.call(json, 'Body')) {
+			if (this.options.autoHead) {
+				fillHeadorFoot(obj, json, 'Head', this.options.headArray);
 			}
-			for (var i = 0; i < json.length; i++) {
+			obj.Body = [];
+			for (var i = 0, len = json.length; i < len; i++) {
 				obj.Body[i] = [];
 				k = 0;
 				for (var p in json[i]) {
@@ -1199,13 +1162,43 @@
 					k++;
 				}
 			}
+			if (this.options.autoFoot) {
+				fillHeadorFoot(obj, json, 'Foot', this.options.footArray);
+			}
 			json = obj;
+		} else {
+			if (this.options.autoHead) {
+				json.Head = [
+					[]
+				];
+				json.Head[0] = this.options.headArray;
+			}
+			if (this.options.autoFoot) {
+				json.Foot = [
+					[]
+				];
+				json.Foot[0] = this.options.footArray;
+			}
 		}
 
 		return json || null;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
+	var fillHeadorFoot = function(obj, json, prop, arr) {
+		obj[prop] = [
+			[]
+		];
+		var k = 0;
+		if (arr.length > 0) {
+			obj[prop][0] = arr;
+		} else {
+			for (var p in json[0]) {
+				obj[prop][0][k] = p;
+				k++;
+			}
+		}
+	}
+
 	var parseXML = function(source) {
 		var sourceType, dE, xml;
 
@@ -1227,14 +1220,12 @@
 		return xml || null;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	var addEvent = (document.addEventListener) ? function(elem, type, listener) {
 			elem.addEventListener(type, listener, false);
 		} : function(elem, type, listener) {
 			elem.attachEvent("on" + type, listener);
 		};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	var stopEvent = function(event) {
 		if (event.stopPropagation) {
 			event.stopPropagation();
@@ -1246,14 +1237,12 @@
 		return false;
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	var removeEvent = (document.addEventListener) ? function(elem, type, listener) {
 			elem.removeEventListener(type, listener, false);
 		} : function(elem, type, listener) {
 			elem.detachEvent("on" + type, listener);
 		};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	var getEventPositions = function(event, type) {
 		var pageX = event.pageX,
 			pageY = event.pageY,
@@ -1287,7 +1276,6 @@
 		};
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	var bind = function(func, that) {
 		var a = slice.call(arguments, 2);
 		return function() {
@@ -1295,7 +1283,6 @@
 		};
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	var indexOf = ([].indexOf) ? function(arr, item) {
 			return arr.indexOf(item);
 		} : function(arr, item) {
@@ -1307,7 +1294,6 @@
 			return -1;
 		};
 
-	//////////////////////////////////////////////////////////////////////////////////
 	var clearTextSelections = (window.getSelection) ? function() {
 			window.getSelection().removeAllRanges();
 			return false;
@@ -1318,14 +1304,22 @@
 			return false;
 		};
 
-	//////////////////////////////////////////////////////////////////////////////////
-	var $ = function(elemId) {
-		return document.getElementById(elemId);
-	},
-	slice = Array.prototype.slice,
-		msie = getIEVersion();
+	var doc = document,
+		$ = function(elemId) {
+			return document.getElementById(elemId);
+		},
+		msie = function() {
+			var nav, version;
 
-	// Expose:
+			if ((nav = navigator).appName === "Microsoft Internet Explorer") {
+				if (new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})").exec(nav.userAgent)) {
+					version = parseFloat(RegExp.$1);
+				}
+			}
+			return (version > 5) ? version : undefined;
+		}(),
+		slice = Array.prototype.slice,
+		hasOwnProp = Object.prototype.hasOwnProperty;
+
 	window.Grid = Grid;
-
-})(this, this.document);
+})(window, document);
