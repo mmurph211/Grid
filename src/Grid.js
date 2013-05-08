@@ -69,7 +69,8 @@
 			autoFoot: false,
 			footArray: [],
 			autoHead: false,
-			headArray: []
+			headArray: [],
+			nullValue: ''
 		};
 
 		if (options) {
@@ -97,7 +98,7 @@
 
 		// DOM:
 		if (srcType === "dom" && (srcData = (typeof(srcData) === "string") ? $(srcData) : srcData)) {
-			this.convertData(jsonData = this.convertDomDataToJsonData(srcData));
+			this.convertData(jsonData = parseJSON.call(this, this.convertDomDataToJsonData(srcData)));
 
 			// JSON:
 		} else if (srcType === "json" && (jsonData = parseJSON.call(this, srcData))) {
@@ -105,10 +106,11 @@
 
 			// XML:
 		} else if (srcType === "xml" && (jsonData = parseXML(srcData))) {
-			this.convertData(jsonData = this.convertXmlDataToJsonData(jsonData));
+			this.convertData(jsonData = parseJSON.call(this, this.convertXmlDataToJsonData(jsonData)));
 		}
 
 		this.rowLength = jsonData.Body.length;
+		visibleData = clone(jsonData.Body);
 		this.initCtxArr();
 		this.generateGrid();
 		this.displayGrid();
@@ -879,10 +881,8 @@
 		}
 
 		// Sort the body data by type:
-		ltVal = (sortAsc) ? -1 : 1;
-		gtVal = (sortAsc) ? 1 : -1;
 		rawData.sort(function(a, b) {
-			return that.getSortResult(colSortAs, colIdx, ltVal, gtVal, a[colIdx], b[colIdx]);
+			return that.getSortResult(colSortAs, colIdx, sortAsc, a[colIdx], b[colIdx]);
 		});
 
 		// Update the grid body HTML:
@@ -909,12 +909,13 @@
 		lastSortedColumn = [colIdx, sortAsc];
 	};
 
-	GridProto.getSortResult = function(type, colIdx, ltVal, gtVal, a, b, keyA, keyB) {
+	GridProto.getSortResult = function(type, colIdx, sortAsc, a, b) {
 		if (a === b) {
 			return 0;
 		}
-		if (a == null || a == undefined) a = '0';
-		if (b == null || b == undefined) b = '0';
+		var keyA, keyB, result;
+		if (a === null || a === undefined || a === '') a = this.options.nullValue;
+		if (b === null || b === undefined || b === '') b = this.options.nullValue;
 
 		if (sortCache[(keyA = type + "_" + a)] === undefined) {
 			sortCache[keyA] = (type === "string") ? a : (type === "number") ? parseFloat(a) || -Infinity : (type === "date") ? new Date(a).getTime() || -Infinity : (type === "custom") ? this.options.customSortCleaner(a, colIdx) : a;
@@ -922,8 +923,9 @@
 		if (sortCache[(keyB = type + "_" + b)] === undefined) {
 			sortCache[keyB] = (type === "string") ? b : (type === "number") ? parseFloat(b) || -Infinity : (type === "date") ? new Date(b).getTime() || -Infinity : (type === "custom") ? this.options.customSortCleaner(b, colIdx) : b;
 		}
+		result = sortCache[keyA] < sortCache[keyB] ? -1 : 1;
 
-		return (sortCache[keyA] < sortCache[keyB]) ? ltVal : gtVal;
+		return sortAsc ? result : -result;
 	};
 
 	GridProto.toggleSelectAll = function(toggle) {
@@ -1177,12 +1179,23 @@
 				json.Foot = [
 					[]
 				];
-				json.Foot[0] = this.options.footArray;
+				//json.Foot[0] = this.options.footArray;
+				for (var i = 0; i < this.options.footArray.length; i++) {
+					if (typeof(this.options.footArray[i]) === 'function') {
+						json.Foot[0][i] = this.options.footArray[i](visibleData);
+					} else {
+						json.Foot[0][i] = this.options.footArray[i];
+					}
+				}
 			}
 		}
 
 		return json || null;
 	};
+
+	var addHeadorFoot = function() {
+
+	}
 
 	var fillHeadorFoot = function(obj, json, prop, arr) {
 		obj[prop] = [
@@ -1190,7 +1203,14 @@
 		];
 		var k = 0;
 		if (arr.length > 0) {
-			obj[prop][0] = arr;
+			//obj[prop][0] = arr;
+			for (var i = 0; i < arr.length; i++) {
+				if (typeof(arr[i]) === 'function') {
+					obj[prop][0][i] = arr[i](visibleData);
+				} else {
+					obj[prop][0][i] = arr[i];
+				}
+			}
 		} else {
 			for (var p in json[0]) {
 				obj[prop][0][k] = p;
