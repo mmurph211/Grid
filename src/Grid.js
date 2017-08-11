@@ -547,6 +547,7 @@
 		}
 		
 		if (!sheet.styleSheet) {
+			sheet.innerHTML = "";
 			sheet.appendChild(doc.createTextNode(cssText.join("")));
 		}
 		if (!$(sheet.id)) {
