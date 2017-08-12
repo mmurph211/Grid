@@ -393,7 +393,7 @@
 		try {
 			this.css.sheet.parentNode.removeChild(this.css.sheet);
 		} catch (e) {
-			(this.css.sheet = document.createElement("STYLE")).id = this.element.id + "SS";
+			(this.css.sheet = document.getElementById(this.element.id + "SS") ||document.createElement("STYLE")).id = this.element.id + "SS";
 			this.css.sheet.type = "text/css";
 		}
 		
@@ -547,6 +547,7 @@
 		}
 		
 		if (!sheet.styleSheet) {
+			sheet.innerHTML = "";
 			sheet.appendChild(doc.createTextNode(cssText.join("")));
 		}
 		if (!$(sheet.id)) {
