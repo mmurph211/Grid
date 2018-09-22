@@ -199,5 +199,5 @@ None scheduled at this time.
 License
 -------
 
-MIT-style license.  
-Copyright 2012 Matt V. Murphy | bW11cnBoMjExQGdtYWlsLmNvbQ==
+MIT License.  
+Copyright 2018 Matt V. Murphy | bW11cnBoMjExQGdtYWlsLmNvbQ==
