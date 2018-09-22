@@ -1,7 +1,7 @@
 ////////////////////////////////////
 //
 // Grid
-// MIT-style license. Copyright 2012 Matt V. Murphy
+// MIT License. Copyright 2018 Matt V. Murphy
 //
 ////////////////////////////////////
 (function(window, document, undefined) {
