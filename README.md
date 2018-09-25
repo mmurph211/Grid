@@ -200,4 +200,4 @@ License
 -------
 
 MIT License.  
-Copyright 2018 Matt V. Murphy | bW11cnBoMjExQGdtYWlsLmNvbQ==
+Copyright (c) 2018 Matt V. Murphy | bW11cnBoMjExQGdtYWlsLmNvbQ==
